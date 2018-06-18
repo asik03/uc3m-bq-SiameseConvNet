@@ -33,6 +33,9 @@ def _parse_data(path):
     file = tf.read_file(path)
     img = tf.image.decode_png(file, channels=3)
     img = tf.image.resize_images(img, (182, 182))
+
+    # TODO : Preprocessing: ALINEAR IMAGEN. Suponemos que estan ya alineadas con la libreria de Facenet: /src/align/align_dataset_mtcnn.py
+
     img = tf.image.per_image_standardization(img)
 
     return img, path

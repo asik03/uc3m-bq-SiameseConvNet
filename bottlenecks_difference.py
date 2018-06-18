@@ -37,7 +37,7 @@ def get_difference(img_1, img_2):
         img2 = np.expand_dims(img2, axis=0)
 
         img1 = img1.astype(np.float32)
-        img2 = img1.astype(np.float32)
+        img2 = img2.astype(np.float32)
 
         # Making the bottlenecks
         bottleneck1, end_points1 = model.inference(img1, reuse=True)
