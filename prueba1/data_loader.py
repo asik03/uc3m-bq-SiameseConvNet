@@ -4,7 +4,7 @@ import os
 FLAGS = tf.app.flags.FLAGS
 
 tf.app.flags.DEFINE_integer('image_size', 182, """Height and width of the images.""")
-tf.app.flags.DEFINE_string('data_path', "/home/uc3m1/PycharmProjects/siameseFaceNet/prueba1/test.txt", """Path to the data.""")
+tf.app.flags.DEFINE_string('data_path', "./prueba1/test.txt", """Path to the data.""")
 tfrecord_file_training = os.path.join(FLAGS.data_path, "flowers_train.tfrecord")
 tfrecord_file_eval = os.path.join(FLAGS.data_path, "flowers_eval.tfrecord")
 

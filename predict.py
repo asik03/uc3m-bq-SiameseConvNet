@@ -15,7 +15,7 @@ def main():
 
         bottleneck_tensor, end_points = resnet_bottleneck(img)
 
-        dir_bottlenecks = "/home/uc3m1/PycharmProjects/siameseFaceNet/data/bottlenecks/"
+        dir_bottlenecks = "./data/bottlenecks/"
 
         if not os.path.exists(dir_bottlenecks):
             os.mkdir(dir_bottlenecks)
@@ -37,7 +37,7 @@ def main():
             sess.run(init_local)
 
             # Restore the pretrained model from FaceNet
-            saver.restore(sess, '/home/uc3m1/PycharmProjects/siameseFaceNet/data/weights/model-20180408-102900.ckpt-90')
+            saver.restore(sess, './data/weights/model-20180408-102900.ckpt-90')
 
             for i in range(0, 100000):
                 try:
