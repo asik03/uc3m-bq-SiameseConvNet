@@ -50,6 +50,7 @@ def create_iterator(data):
         dataset = dataset.batch(1)
 
         iterator = dataset.make_one_shot_iterator()
+
     return iterator
 
 
@@ -62,25 +63,8 @@ def _parse_data_for_diff(path1, path2, label):
 
     return np.bottleneck_1, bottleneck_2, label
 
-'''
-def create_iterator_for_diff(data):
-    paths1, paths2, labels = _load_3_paths_and_labels(data)
 
-    with tf.variable_scope('Iterator'):
-        dataset = tf.data.Dataset.from_tensor_slices((tf.string_to_number(paths1), tf.string_to_number(paths2), tf.string_to_number(labels)))
-
-        dataset_tensor = tf.convert_to_tensor(dataset, np.float32)
-
-        dataset = dataset_tensor.map(_parse_data_for_diff)
-        dataset = dataset.batch(32)
-        print("Dataset:", dataset)
-
-        iterator = dataset.make_one_shot_iterator()
-    return iterator
-'''
-
-
-def create_iterator_for_diff(tfrecord_file, batch_size=64):
+def create_iterator_for_diff(tfrecord_file, is_training, batch_size=64):
     """ Creates a one shot iterator from the TFRecord files.
         Args:
             tfrecord_file: a tensorflow record file path with the bottlenecks and labels.
@@ -89,10 +73,15 @@ def create_iterator_for_diff(tfrecord_file, batch_size=64):
             iterator: one shot iterator.
     """
     dataset = tf.data.TFRecordDataset(tfrecord_file)
+    print("Dataset: ", dataset)
+    if is_training:
+        dataset = dataset.map(parse)
+        dataset = dataset.repeat()
+        dataset = dataset.shuffle(buffer_size=2560)
 
-    dataset = dataset.map(parse)
-    dataset = dataset.repeat()
-    dataset = dataset.shuffle(buffer_size=2560)
+    else:
+        dataset = dataset.map(parse)
+
     dataset = dataset.batch(batch_size)
 
     iterator = dataset.make_one_shot_iterator()

@@ -1,10 +1,8 @@
 import tensorflow as tf
-
 import numpy as np
 import os
 import load_data as data
 from model.inception_resnet_v1 import inference as resnet_bottleneck
-from tensorflow.python.tools import inspect_checkpoint as chkp
 
 
 def main():
@@ -13,7 +11,7 @@ def main():
         iterator = data.create_iterator("./data/all_img_paths.txt")
         img, path_tensor = iterator.get_next()
 
-        bottleneck_tensor, end_points = resnet_bottleneck(img)
+        bottleneck_tensor, end_points = resnet_bottleneck(img, phase_train=False)
 
         dir_bottlenecks = "./data/bottlenecks/"
 
@@ -24,9 +22,8 @@ def main():
         init_global = tf.initializers.global_variables()
         init_local = tf.initializers.local_variables()
 
-        #chkp.print_tensors_in_checkpoint_file('/home/uc3m1/PycharmProjects/siameseFaceNet/data/weights/model-20180408'
-        #                                      '-102900.ckpt-90', tensor_name='', all_tensors=False,
-        #                                      all_tensor_names=True)
+        # chkp.print_tensors_in_checkpoint_file('./data/weights/model-20180408-102900.ckpt-90', tensor_name='',
+        # all_tensors=False, all_tensor_names=True)
 
         # Create a saver
         saver = tf.train.Saver(tf.global_variables())
@@ -37,7 +34,7 @@ def main():
             sess.run(init_local)
 
             # Restore the pretrained model from FaceNet
-            saver.restore(sess, './data/weights/model-20180408-102900.ckpt-90')
+            saver.restore(sess, '/home/uc3m1/PycharmProjects/siameseFaceNet/data/weights/model-20180408-102900.ckpt-90')
 
             for i in range(0, 100000):
                 try:

@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-import tensorflow.contrib.slim as slim
+from model import inception_resnet_v1 as model
 import logging
 import load_data as data
 from datetime import datetime
@@ -12,12 +12,13 @@ FLAGS = tf.app.flags.FLAGS
 
 tf.app.flags.DEFINE_string('log_dir', './data/logs/', """Directory where to write event logs. """)
 tf.app.flags.DEFINE_integer('max_steps', 10000, """Number of epochs to run.""")
-tf.app.flags.DEFINE_string('save_dir', './data/saves/', """Directory where to save the checkpoints. """)
-tf.app.flags.DEFINE_string('tfrecord_file', './data/tfrecord_file', """File with the dataset to train. """)
+tf.app.flags.DEFINE_string('save_dir', './data/saves/', """Directory where to save and load the checkpoints. """)
+tf.app.flags.DEFINE_string('tfrecord_file', './data/tfrecord_train_file', """File with the dataset to train. """)
 
 num_classes = 2
-dropout_keep_prob = 0.95
-learning_rate = 0.0005
+dropout_keep_prob = 0.85
+learning_rate = 0.001
+batch_size = 32
 
 
 def init_logger():
@@ -31,7 +32,7 @@ def train():
     with tf.Graph().as_default() as g:
         global_step = tf.train.get_or_create_global_step()
 
-        iterator = data.create_iterator_for_diff(FLAGS.tfrecord_file)
+        iterator = data.create_iterator_for_diff(FLAGS.tfrecord_file, is_training=True, batch_size=batch_size)
         print(iterator)
 
         bottlenecks_1_batch, bottlenecks_2_batch, labels_batch = iterator.get_next()
@@ -39,49 +40,13 @@ def train():
         print("bottleneck_2:", bottlenecks_2_batch)
         print("labels_batch:", labels_batch)
 
-        diff_bottlenecks_tensor = tf.subtract(bottlenecks_1_batch, bottlenecks_2_batch)
+        diff_bottlenecks_tensor = tf.abs(tf.subtract(bottlenecks_1_batch, bottlenecks_2_batch))
         print("Difference: ", diff_bottlenecks_tensor)
 
-        with tf.variable_scope('classify'):
-            end_points = {}
-
-            net = slim.dropout(diff_bottlenecks_tensor, dropout_keep_prob, scope='Dropout_1b')
-            net = slim.flatten(net, scope='Flatten_1')
-
-            end_points['Flatten_1'] = net
-
-            # Creates a fully connected layer
-            net = slim.fully_connected(net, 512, activation_fn=None,
-                                       weights_initializer=tf.truncated_normal_initializer(stddev=0.01),
-                                       scope='FC_1')
-
-            tf.summary.histogram(name='Weights',
-                                 values=tf.get_default_graph().get_tensor_by_name('classify/FC_1/weights:0'))
-            tf.summary.histogram(name='Biases',
-                                 values=tf.get_default_graph().get_tensor_by_name('classify/FC_1/biases:0'))
-
-            net = slim.dropout(net, dropout_keep_prob, scope='Dropout_2b')
-            net = slim.flatten(net, scope='Flatten_2')
-
-            end_points['Flatten_2'] = net
-
-            net = slim.fully_connected(net, num_classes, activation_fn=None,
-                                       weights_initializer=tf.truncated_normal_initializer(stddev=0.01),
-                                       scope='FC_2')
-
-            print(tf.contrib.graph_editor.get_tensors(tf.get_default_graph()))
-
-            tf.summary.histogram(name='Weights',
-                                 values=tf.get_default_graph().get_tensor_by_name('classify/FC_2/weights:0'))
-            tf.summary.histogram(name='Biases',
-                                 values=tf.get_default_graph().get_tensor_by_name('classify/FC_2/biases:0'))
-
-            end_points['Logits'] = net
-
-            tf.add_to_collection('classify', net)
+        logits = model.classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob, num_classes=num_classes)
 
         # Loss calculation
-        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=net, labels=labels_batch)
+        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=labels_batch)
         cross_entropy_mean = tf.reduce_mean(loss, name='cross_entropy')
         tf.summary.scalar(name='loss', tensor=cross_entropy_mean)
 

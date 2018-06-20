@@ -1,19 +1,16 @@
-import numpy as np
-import load_data as data
 import os
 import random
 
-data_file = "./data/test.txt"
-
+data_file = "./data/all_img_paths.txt"
+out_file = "./data/diff_dataset.txt"
+bottlenecks_dir = "./data/bottlenecks/"
 num_tuples_per_class = 30
 
 
 def main():
-
-    basename_dir = "./data/bottlenecks/"
-    with open('./data/diff_dataset.txt', 'w') as out:
-        for class_name in os.listdir(basename_dir):
-            class_path = os.path.join(basename_dir, class_name)
+    with open(out_file, 'w') as out:
+        for class_name in os.listdir(bottlenecks_dir):
+            class_path = os.path.join(bottlenecks_dir, class_name)
             print(os.listdir(class_path))
 
             for i in range(num_tuples_per_class):
@@ -26,8 +23,8 @@ def main():
             for i in range(num_tuples_per_class):
                 npy_path_1 = get_random_item_from_class(class_path)
 
-                comparing_class = get_random_class(basename_dir, exclude=os.listdir(basename_dir).index(class_name))
-                npy_path_2 = get_random_item_from_class(os.path.join(basename_dir, comparing_class))
+                comparing_class = get_random_class(bottlenecks_dir, exclude=os.listdir(bottlenecks_dir).index(class_name))
+                npy_path_2 = get_random_item_from_class(os.path.join(bottlenecks_dir, comparing_class))
 
                 out.write(npy_path_1 + ' ' + npy_path_2 + ' 0' + '\n')
                 print(npy_path_1, npy_path_2, '0')

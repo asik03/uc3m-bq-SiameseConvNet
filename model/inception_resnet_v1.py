@@ -277,6 +277,43 @@ def fine_tuning(bottleneck_tensor, end_points, num_classes, dropout_keep_prob=0.
     return end_points['Logits']
 
 
+def classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob, num_classes):
+    with tf.variable_scope('classify'):
+        end_points = {}
+
+        #net = slim.dropout(diff_bottlenecks_tensor, dropout_keep_prob, scope='Dropout_1b')
+        net = slim.flatten(diff_bottlenecks_tensor, scope='Flatten_1')
+
+        end_points['Flatten_1'] = net
+
+        # Creates a fully connected layer
+        net = slim.fully_connected(net, 512, activation_fn=tf.nn.sigmoid,
+                                   weights_initializer=tf.truncated_normal_initializer(stddev=0.01),
+                                   scope='FC_1')
+
+        tf.summary.histogram(name='Weights',
+                             values=tf.get_default_graph().get_tensor_by_name('classify/FC_1/weights:0'))
+        tf.summary.histogram(name='Biases',
+                             values=tf.get_default_graph().get_tensor_by_name('classify/FC_1/biases:0'))
+
+        net = slim.dropout(net, dropout_keep_prob, scope='Dropout_2b')
+
+        net = slim.fully_connected(net, num_classes, activation_fn=None,
+                                   weights_initializer=tf.truncated_normal_initializer(stddev=0.01),
+                                   scope='FC_2')
+
+        tf.summary.histogram(name='Weights',
+                             values=tf.get_default_graph().get_tensor_by_name('classify/FC_2/weights:0'))
+        tf.summary.histogram(name='Biases',
+                             values=tf.get_default_graph().get_tensor_by_name('classify/FC_2/biases:0'))
+
+        end_points['Logits'] = net
+
+        tf.add_to_collection('classify', net)
+
+    return net
+
+
 def loss(predictions, labels):
     """Calculate the loss of the model
     Args:

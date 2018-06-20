@@ -3,13 +3,15 @@ import tensorflow as tf
 import numpy as np
 
 
-dir = '/home/uc3m1/PycharmProjects/siameseFaceNet/data/datasets/dataset_prueba'
+data_dir = '/home/uc3m1/PycharmProjects/siameseFaceNet/data/datasets/filtered_dataset'
+diff_dataset = "./data/diff_dataset.txt"
+img_paths = "./data/all_img_paths.txt"
 
 
-def generate_txt_with_all_images(path):
+def generate_txt_with_all_images(data_dir, path):
     with open(path, 'w') as out:
-        for person in os.listdir(dir):
-            path = os.path.join(dir, person)
+        for person in os.listdir(data_dir):
+            path = os.path.join(data_dir, person)
 
             for img in os.listdir(path):
                 img_path = os.path.join(path, img)
@@ -82,9 +84,10 @@ def _get_image_and_label_from_entry(entry):
 
 
 def main():
-    pass
-    #generate_txt_with_all_images("./data/all_img_paths.txt")
-    #generate_tfrecord_files("./data/diff_dataset.txt", "./data/tfrecord_file")
+    #generate_txt_with_all_images(data_dir, img_paths)
+
+    generate_tfrecord_files(diff_dataset, "./data/tfrecord_train_file")
+    generate_tfrecord_files(diff_dataset, "./data/tfrecord_eval_file")
 
 
 if __name__ == '__main__':
