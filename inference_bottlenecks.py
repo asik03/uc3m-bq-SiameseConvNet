@@ -1,3 +1,4 @@
+
 # Copyright (c) 2018 by BQ. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,23 +24,27 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
 import tensorflow as tf
 import numpy as np
-import os
 import load_data as data
 
-from model.inception_resnet_v1 import inference as resnet_bottleneck
+from model.inception_resnet_v1 import resnet_bottleneck
+
+bottlenecks_train_dir = "./data/train_bottlenecks/"
+bottlenecks_eval_dir = "./data/eval_bottlenecks/"
+
+img_paths_txt_train_path = "./data/all_img_train_paths.txt"
+img_paths_txt_eval_path = "./data/all_img_eval_paths.txt"
 
 
-def main():
+def inference_bottlenecks(imgs_path, dir_bottlenecks):
     with tf.Graph().as_default():
 
-        iterator = data.create_iterator("./data/all_img_paths.txt")
+        iterator = data.create_bottleneck_iterator(imgs_path)
         img, path_tensor = iterator.get_next()
 
         bottleneck_tensor, end_points = resnet_bottleneck(img, phase_train=False)
-
-        dir_bottlenecks = "./data/bottlenecks/"
 
         if not os.path.exists(dir_bottlenecks):
             os.mkdir(dir_bottlenecks)
@@ -84,4 +89,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    inference_bottlenecks(img_paths_txt_train_path, bottlenecks_train_dir)
+    inference_bottlenecks(img_paths_txt_eval_path, bottlenecks_eval_dir)

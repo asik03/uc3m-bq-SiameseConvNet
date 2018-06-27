@@ -36,7 +36,7 @@ tf.app.flags.DEFINE_string('ckpt_dir', './data/saves/', """Directory where to sa
 tf.app.flags.DEFINE_string('tfrecord_file', './data/tfrecord_eval_file', """File with the dataset to train. """)
 tf.app.flags.DEFINE_string('batch_size', '1', """Batch size""")
 
-dropout_keep_prob = 0.95
+dropout_keep_prob = 0.8
 num_classes = 2
 batch_size = 1
 
@@ -44,19 +44,14 @@ batch_size = 1
 def eval():
 
     with tf.Graph().as_default():
-        iterator = data.create_iterator_for_diff(FLAGS.tfrecord_file, is_training=False)
-        print(iterator)
+        iterator = data.create_iterator_for_diff(FLAGS.tfrecord_file, is_training=False, batch_size=batch_size)
 
         bottlenecks_1_batch, bottlenecks_2_batch, labels_batch = iterator.get_next()
-        print("bottleneck_1:", bottlenecks_1_batch)
-        print("bottleneck_2:", bottlenecks_2_batch)
-        print("labels_batch:", labels_batch)
 
         diff_bottlenecks_tensor = tf.abs(tf.subtract(bottlenecks_1_batch, bottlenecks_2_batch))
-        print("Difference: ", diff_bottlenecks_tensor)
 
         logits = model.classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob, num_classes=num_classes)
-        print(logits)
+
         # Get the class with the highest score
         predictions = tf.nn.top_k(logits, k=1)
 
@@ -72,19 +67,44 @@ def eval():
 
             saver.restore(sess, tf.train.latest_checkpoint(FLAGS.ckpt_dir))
 
-            success = 0
-            total = 0
+            predicted_label = 0
+            false_positives = 0
+            false_negatives = 0
+            true_success = 0
+            false_success = 0
             exec_next_step = True
             while exec_next_step is True:
                 try:
-                    total += 1
-                    predicted, bottleneck_1, bottleneck_2, label = sess.run([predictions, bottlenecks_1_batch, bottlenecks_2_batch, labels_batch])
+                    predicted, bottleneck_1, bottleneck_2, label = sess.run([predictions, bottlenecks_1_batch,
+                                                                                bottlenecks_2_batch, labels_batch])
 
-                    if predicted.indices[0][0] == label[0]:
-                        success += 1
-                    logger.info('Success rate: %.2f of %i examples', success / total * 100, total)
+                    if predicted.indices[0][0] == 0:
+                        predicted_label = 0
+                    elif predicted.indices[0][0] == 1:
+                        if predicted.values[0][0] >= 0.85:
+                            predicted_label = 1
+                        else:
+                            predicted_label = 0
+
+                    if predicted_label == label[0] and predicted_label == 1:
+                        true_success += 1
+
+                    if predicted_label == label[0] and predicted_label == 0:
+                        false_success += 1
+
+                    if predicted_label != label[0] and predicted_label == 1:
+                        false_positives += 1
+
+                    if predicted_label != label[0] and predicted_label == 0:
+                        false_negatives += 1
+
                 except tf.errors.OutOfRangeError:
                     logger.info("Eval ends...")
+                    logger.info("Total false positives: %i", false_positives)
+                    logger.info("Total false negatives: %i", false_negatives)
+                    logger.info("Total true success: %i", true_success)
+                    logger.info("Total false success: %i", false_success)
+                    logger.info("Total: %i", false_positives + false_negatives + true_success + false_success)
                     exec_next_step = False
 
 

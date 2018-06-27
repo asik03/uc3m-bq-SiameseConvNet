@@ -1,3 +1,5 @@
+""" Script containing numerous functions needed to load data into the model."""
+
 # Copyright (c) 2018 by BQ. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,47 +28,17 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-
-def _load_3_paths_and_labels(data_file):
-    with open(data_file, 'r') as f:
-        lines = f.readlines()
-        paths1 = []
-        paths2 = []
-        labels = []
-
-        for i, line in enumerate(lines):
-            path1, path2, label = line.split()
-            paths1.append(path1)
-            paths2.append(path2)
-            labels.append(label)
-
-    return np.array(paths1), np.array(paths2), np.array(labels)
+image_size = 182
 
 
-def _load_all_images_paths(data_file):
-    with open(data_file, 'r') as f:
-        lines = f.readlines()
-        paths = []
-
-        for i, line in enumerate(lines):
-            paths.append(line.strip('\n'))
-    return np.array(paths)
-
-
-# Read the image of a file path, and convert it into a Tensorflow input with some modifications.
-def _parse_data(path):
-    file = tf.read_file(path)
-    img = tf.image.decode_png(file, channels=3)
-    img = tf.image.resize_images(img, (182, 182))
-
-    # TODO : Preprocessing: ALINEAR IMAGEN. Suponemos que estan ya alineadas con la libreria de Facenet: /src/align/align_dataset_mtcnn.py
-
-    img = tf.image.per_image_standardization(img)
-
-    return img, path
-
-
-def create_iterator(data):
+def create_bottleneck_iterator(data):
+    """
+    Creates an Tensorflow iterator used for the bottleneck inferences.
+        Args:
+            data: txt file path with the corresponding data.
+        Return:
+            iterator: one shot iterator with the images and labels.
+    """
     paths = _load_all_images_paths(data)
 
     with tf.variable_scope('Iterator'):
@@ -79,33 +51,62 @@ def create_iterator(data):
     return iterator
 
 
-def _parse_data_for_diff(path1, path2, label):
-    file_1 = tf.read_file(path1)
-    file_2 = tf.read_file(path2)
-    bottleneck_1 = np.load(file_1)
-    bottleneck_2 = np.load(file_2)
-    print(bottleneck_1)
+def _load_all_images_paths(data_file):
+    """
+    Load all image paths from a txt file and returns and np array of them.
+        Args:
+            data_file: txt file path with the corresponding data.
+        Return:
+            np.array(paths): array with the image paths.
+    """
+    with open(data_file, 'r') as f:
+        lines = f.readlines()
+        paths = []
 
-    return np.bottleneck_1, bottleneck_2, label
+        for i, line in enumerate(lines):
+            paths.append(line.strip('\n'))
+    return np.array(paths)
+
+
+# Read the image of a file path, and convert it into a Tensorflow input with some modifications.
+def _parse_data(path):
+    """
+    Load an image and transform it to an array.
+        Args:
+            path: txt file path with the corresponding data.
+            img_size: size in pixels of the image height and width.
+        Return:
+            path: input file path of the image to operate.
+            img: array of the image input, decoded and resized it.
+    """
+    img = tf.read_file(path)
+    img = tf.image.decode_png(img, channels=3)
+    img = tf.image.resize_images(img, (image_size, image_size))
+    img = tf.image.per_image_standardization(img)
+
+    return img, path
 
 
 def create_iterator_for_diff(tfrecord_file, is_training, batch_size=64):
-    """ Creates a one shot iterator from the TFRecord files.
+    """
+    Creates a one shot iterator from the TFRecord files.
         Args:
-            tfrecord_file: a tensorflow record file path with the bottlenecks and labels.
-            batch_size:
+            tfrecord_file: a Tensorflow record file path with bottlenecks and labels.
+            is_training: bool variable, change the dataset in order to make a train or eval iterator.
+            batch_size: number of inputs per batch, 64 by default.
         Return:
             iterator: one shot iterator.
     """
     dataset = tf.data.TFRecordDataset(tfrecord_file)
-    print("Dataset: ", dataset)
+
     if is_training:
-        dataset = dataset.map(parse)
+        dataset = dataset.map(_parse)
         dataset = dataset.repeat()
         dataset = dataset.shuffle(buffer_size=2560)
 
     else:
-        dataset = dataset.map(parse)
+        dataset = dataset.map(_parse)
+        #dataset = dataset.shuffle(buffer_size=2560)
 
     dataset = dataset.batch(batch_size)
 
@@ -114,10 +115,13 @@ def create_iterator_for_diff(tfrecord_file, is_training, batch_size=64):
     return iterator
 
 
-def parse(serialized):
-    """ Convert the images and labels from records feature to Tensors.
+def _parse(serialized):
+    """
+    Convert the images and labels from records feature to Tensors.
         Args:
             serialized: A dataset comprising records from one TFRecord file.
+        Return:
+            bottleneck pair and label tensors.
     """
     # Define a dict with the data-names and types we expect to find in the TFRecords file.
 
@@ -128,8 +132,7 @@ def parse(serialized):
     }
 
     # Parse the serialized data so we get a dict with our data.
-    parsed_example = tf.parse_single_example(serialized=serialized,
-                                             features=feature)
+    parsed_example = tf.parse_single_example(serialized=serialized, features=feature)
 
     # Get the image as raw bytes, and  the height, width and label as int.
     bottleneck_1 = tf.cast(parsed_example['bottleneck_1'], tf.float32)
@@ -138,13 +141,3 @@ def parse(serialized):
 
     # The image and label are now correct TensorFlow types.
     return bottleneck_1, bottleneck_2, label
-
-
-def main(argv= None):
-    pass
-    #consume_tfrecord()
-
-
-if __name__ == '__main__':
-    tf.app.run()
-

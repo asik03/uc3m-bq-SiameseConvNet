@@ -33,7 +33,7 @@ from datetime import datetime
 FLAGS = tf.app.flags.FLAGS
 
 tf.app.flags.DEFINE_string('log_dir', './data/logs/', """Directory where to write event logs. """)
-tf.app.flags.DEFINE_integer('max_steps', 10000, """Number of epochs to run.""")
+tf.app.flags.DEFINE_integer('max_steps', 2500, """Number of epochs to run.""")
 tf.app.flags.DEFINE_string('save_dir', './data/saves/', """Directory where to save and load the checkpoints. """)
 tf.app.flags.DEFINE_string('tfrecord_file', './data/tfrecord_train_file', """File with the dataset to train. """)
 

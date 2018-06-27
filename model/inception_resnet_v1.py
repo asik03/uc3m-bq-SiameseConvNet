@@ -132,7 +132,7 @@ def reduction_b(net):
     return net
 
 
-def inference(images, keep_probability=0.8, phase_train=True, weight_decay=0.0, reuse=None):
+def resnet_bottleneck(images, keep_probability=0.8, phase_train=True, weight_decay=0.0, reuse=None):
     batch_norm_params = {
         # Decay for the moving averages.
         'decay': 0.995,
@@ -238,50 +238,14 @@ def inception_resnet_v1(inputs, is_training=True, dropout_keep_prob=0.8, reuse=N
 
                     end_points['PreLogitsFlatten'] = net
                     bottleneck = net
-                '''
-                # TODO : EN UN FUTURO PODEEMOS IGNORARLO, SOLO QUEREMOS EL BOTTLENECK
-                net = slim.fully_connected(net, num_classes, activation_fn=None,
-                                           scope='Bottleneck', reuse=False)
-                '''
 
     return bottleneck, end_points
-
-
-def fine_tuning(bottleneck_tensor, end_points, num_classes, dropout_keep_prob=0.8):
-    """Creates the classificator layer
-        Args:
-          bottleneck_tensor: Output from the last layer of the pretrained net.
-          end_points: A dictionary from components of the network to the corresponding activation.
-          num_classes: Number of classes of our classificator.
-          dropout_keep_prob: Hyperparameter of the FC layer.
-        Returns:
-          Logits: A Tensor with the logits (pre-softmax activations)
-        """
-    with tf.variable_scope('fine_tuning'):
-        # The input is a 1 x 1 x 1536 tensor
-        net = slim.dropout(bottleneck_tensor, dropout_keep_prob, scope='Dropout_1b')
-        net = slim.flatten(net, scope='PreLogitsFlatten')
-        end_points['PreLogitsFlatten'] = net
-
-        # Creates a fully connected layer
-        logits = slim.fully_connected(net, num_classes, activation_fn=None,
-                                      weights_initializer=tf.truncated_normal_initializer(stddev=0.01),
-                                      scope='Logits')
-        tf.summary.histogram(name='Weights', values=tf.get_default_graph().get_tensor_by_name('fine_tuning/Logits/weights:0'))
-        tf.summary.histogram(name='Biases', values=tf.get_default_graph().get_tensor_by_name('fine_tuning/Logits/biases:0'))
-
-        end_points['Logits'] = logits
-
-        tf.add_to_collection('fine_tuning', logits)
-
-    return end_points['Logits']
 
 
 def classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob, num_classes):
     with tf.variable_scope('classify'):
         end_points = {}
 
-        #net = slim.dropout(diff_bottlenecks_tensor, dropout_keep_prob, scope='Dropout_1b')
         net = slim.flatten(diff_bottlenecks_tensor, scope='Flatten_1')
 
         end_points['Flatten_1'] = net
@@ -307,23 +271,10 @@ def classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob, num_classes
         tf.summary.histogram(name='Biases',
                              values=tf.get_default_graph().get_tensor_by_name('classify/FC_2/biases:0'))
 
+        net = slim.softmax(net)
+
         end_points['Logits'] = net
 
         tf.add_to_collection('classify', net)
 
     return net
-
-
-def loss(predictions, labels):
-    """Calculate the loss of the model
-    Args:
-      predictions: Class predicted by the model.
-      labels: Correct class of the image.
-    Returns:
-      cross_entropy:mean: Average cross entropy for the batch.
-    """
-    loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=predictions, labels=labels)
-    cross_entropy_mean = tf.reduce_mean(loss, name='cross_entropy')
-    tf.summary.scalar(name='loss', tensor=cross_entropy_mean)
-
-    return cross_entropy_mean
