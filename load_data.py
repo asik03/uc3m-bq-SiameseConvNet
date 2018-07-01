@@ -106,7 +106,6 @@ def create_iterator_for_diff(tfrecord_file, is_training, batch_size=64):
 
     else:
         dataset = dataset.map(_parse)
-        #dataset = dataset.shuffle(buffer_size=2560)
 
     dataset = dataset.batch(batch_size)
 

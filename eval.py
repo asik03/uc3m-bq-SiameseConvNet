@@ -39,24 +39,29 @@ tf.app.flags.DEFINE_string('batch_size', '1', """Batch size""")
 dropout_keep_prob = 0.8
 num_classes = 2
 batch_size = 1
+success_constraint = 0.9999
 
 
 def eval():
 
     with tf.Graph().as_default():
+        # Create dataset iterator of batch 1, obtaining the statistics correctly
         iterator = data.create_iterator_for_diff(FLAGS.tfrecord_file, is_training=False, batch_size=batch_size)
-
         bottlenecks_1_batch, bottlenecks_2_batch, labels_batch = iterator.get_next()
 
+        # Get the bottleneck distances between each of them, and transform to positive their values.
         diff_bottlenecks_tensor = tf.abs(tf.subtract(bottlenecks_1_batch, bottlenecks_2_batch))
 
-        logits = model.classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob, num_classes=num_classes)
+        # Get the logits from the classify model.
+        logits, pre_softmax = model.classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob, num_classes=num_classes, is_training=False)
 
         # Get the class with the highest score
         predictions = tf.nn.top_k(logits, k=1)
 
+        # Create the server to load the model weights and bias.
         saver = tf.train.Saver(tf.global_variables('classify'))
 
+        # Variables initialisation
         init = tf.global_variables_initializer()
 
         logger = init_logger()
@@ -65,27 +70,32 @@ def eval():
         with tf.Session() as sess:
             sess.run(init)
 
+            # Restoring the classifier model
             saver.restore(sess, tf.train.latest_checkpoint(FLAGS.ckpt_dir))
 
+            # Auxiliary variables
             predicted_label = 0
             false_positives = 0
             false_negatives = 0
             true_success = 0
             false_success = 0
             exec_next_step = True
+
             while exec_next_step is True:
                 try:
-                    predicted, bottleneck_1, bottleneck_2, label = sess.run([predictions, bottlenecks_1_batch,
-                                                                                bottlenecks_2_batch, labels_batch])
+                    # Obtain the prediction(s) and the label(s) of each step.
+                    predicted, label, real_value = sess.run([predictions, labels_batch, pre_softmax])
 
+                    # Using auxiliary parameter to check the results later.
                     if predicted.indices[0][0] == 0:
                         predicted_label = 0
                     elif predicted.indices[0][0] == 1:
-                        if predicted.values[0][0] >= 0.85:
+                        if predicted.values[0][0] >= success_constraint:
                             predicted_label = 1
                         else:
                             predicted_label = 0
 
+                    # Obtaining confusion matrix values
                     if predicted_label == label[0] and predicted_label == 1:
                         true_success += 1
 

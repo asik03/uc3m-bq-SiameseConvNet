@@ -1,3 +1,4 @@
+""" Creates a new directory dataset within bottlenecks from the original image dataset."""
 
 # Copyright (c) 2018 by BQ. All Rights Reserved.
 #
@@ -39,11 +40,18 @@ img_paths_txt_eval_path = "./data/all_img_eval_paths.txt"
 
 
 def inference_bottlenecks(imgs_path, dir_bottlenecks):
+    """
+    Bottlenecks generator.
+        Args:
+            imgs_path: txt path file with a list of image paths, one per each row.
+            dir_bottlenecks: directory where to save the bottleneck.
+    """
     with tf.Graph().as_default():
-
+        # Get the image from the dataset using the iterator
         iterator = data.create_bottleneck_iterator(imgs_path)
         img, path_tensor = iterator.get_next()
 
+        # Bottlenek inferences
         bottleneck_tensor, end_points = resnet_bottleneck(img, phase_train=False)
 
         if not os.path.exists(dir_bottlenecks):
@@ -53,14 +61,10 @@ def inference_bottlenecks(imgs_path, dir_bottlenecks):
         init_global = tf.initializers.global_variables()
         init_local = tf.initializers.local_variables()
 
-        # chkp.print_tensors_in_checkpoint_file('./data/weights/model-20180408-102900.ckpt-90', tensor_name='',
-        # all_tensors=False, all_tensor_names=True)
-
         # Create a saver
         saver = tf.train.Saver(tf.global_variables())
 
         with tf.Session() as sess:
-
             sess.run(init_global)
             sess.run(init_local)
 

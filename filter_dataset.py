@@ -138,8 +138,8 @@ def create_filtered_eval_dataset(txt_path, filtered_dataset_path):
 def main():
     #create_filter_paths_txt(dataset_path, txt_with_new_dataset_train_paths, txt_with_new_dataset_eval_paths,
     #                        min_num_images_per_class, max_num_images_per_class)
-    create_filtered_dataset(txt_with_new_dataset_train_paths, txt_with_new_dataset_eval_paths,
-                            filtered_dataset_train_path, filtered_dataset_eval_path)
+    #create_filtered_dataset(txt_with_new_dataset_train_paths, txt_with_new_dataset_eval_paths,
+    #                        filtered_dataset_train_path, filtered_dataset_eval_path)
     pass
 
 

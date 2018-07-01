@@ -54,17 +54,14 @@ def train():
     with tf.Graph().as_default() as g:
         global_step = tf.train.get_or_create_global_step()
 
+        # Get the bottlenecks and labels from the dataset using the iterator
         iterator = data.create_iterator_for_diff(FLAGS.tfrecord_file, is_training=True, batch_size=batch_size)
-        print(iterator)
-
         bottlenecks_1_batch, bottlenecks_2_batch, labels_batch = iterator.get_next()
-        print("bottleneck_1:", bottlenecks_1_batch)
-        print("bottleneck_2:", bottlenecks_2_batch)
-        print("labels_batch:", labels_batch)
 
+        # Get the absolute difference bottlenecks, using tensorflow functions.
         diff_bottlenecks_tensor = tf.abs(tf.subtract(bottlenecks_1_batch, bottlenecks_2_batch))
-        print("Difference: ", diff_bottlenecks_tensor)
 
+        # Obtain the logits from the bottlenecks difference.
         logits = model.classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob, num_classes=num_classes)
 
         # Loss calculation
@@ -103,6 +100,7 @@ def train():
                 # We do the training and compute the loss and the summaries
                 _, loss_val, summary = sess.run([train_op, cross_entropy_mean, merge])
 
+                # Tensorboard update
                 if epoch % 10 is 0:
                     logger.info('Time: %s   Loss: %f   Step: %i', str(datetime.now()), loss_val, epoch)
                     # Write the summaries in the log file

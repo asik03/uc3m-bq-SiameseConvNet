@@ -153,18 +153,19 @@ def resnet_bottleneck(images, keep_probability=0.8, phase_train=True, weight_dec
 
 
 def inception_resnet_v1(inputs, is_training=True, dropout_keep_prob=0.8, reuse=None, scope='InceptionResnetV1'):
-    """Creates the Inception Resnet V1 model.
-    Args:
-      inputs: a 4-D tensor of size [batch_size, height, width, 3].
-      num_classes: number of predicted classes.
-      is_training: whether is training or not.
-      dropout_keep_prob: float, the fraction to keep before final layer.
-      reuse: whether or not the network and its variables should be reused. To be
-        able to reuse 'scope' must be given.
-      scope: Optional variable_scope.
-    Returns:
-      logits: the logits outputs of the model.
-      end_points: the set of end_points from the inception model.
+    """
+    Creates the Inception Resnet V1 model.
+        Args:
+          inputs: a 4-D tensor of size [batch_size, height, width, 3].
+          num_classes: number of predicted classes.
+          is_training: whether is training or not.
+          dropout_keep_prob: float, the fraction to keep before final layer.
+          reuse: whether or not the network and its variables should be reused. To be
+            able to reuse 'scope' must be given.
+          scope: Optional variable_scope.
+        Returns:
+          bottleneck: the logits outputs of the model, without doing any classification.
+          end_points: the set of end_points from the inception model.
     """
     end_points = {}
 
@@ -242,7 +243,18 @@ def inception_resnet_v1(inputs, is_training=True, dropout_keep_prob=0.8, reuse=N
     return bottleneck, end_points
 
 
-def classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob, num_classes):
+def classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob, num_classes, is_training=True):
+    """
+    Creates the classifier model.
+        Args:
+          diff_bottlenecks_tensor: a 1-D tensor of size [num_values_per_bottleneck].
+          dropout_keep_prob: float, the fraction to keep before final layer.
+          num_classes: number of predicted classes.
+          is_training: whether is training or not.
+        Returns:
+          net: the logits outputs of the model.
+          end_points[pre_softmax]: previous original values after the softmax step.
+    """
     with tf.variable_scope('classify'):
         end_points = {}
 
@@ -260,7 +272,7 @@ def classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob, num_classes
         tf.summary.histogram(name='Biases',
                              values=tf.get_default_graph().get_tensor_by_name('classify/FC_1/biases:0'))
 
-        net = slim.dropout(net, dropout_keep_prob, scope='Dropout_2b')
+        net = slim.dropout(net, dropout_keep_prob, scope='Dropout_2b', is_training=is_training)
 
         net = slim.fully_connected(net, num_classes, activation_fn=None,
                                    weights_initializer=tf.truncated_normal_initializer(stddev=0.01),
@@ -271,10 +283,12 @@ def classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob, num_classes
         tf.summary.histogram(name='Biases',
                              values=tf.get_default_graph().get_tensor_by_name('classify/FC_2/biases:0'))
 
+        end_points['pre_softmax'] = net
+
         net = slim.softmax(net)
 
         end_points['Logits'] = net
 
         tf.add_to_collection('classify', net)
 
-    return net
+    return net, end_points['pre_softmax']
