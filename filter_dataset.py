@@ -38,14 +38,15 @@ filtered_dataset_train_path = './data/datasets/filtered_train_dataset'
 filtered_dataset_eval_path = './data/datasets/filtered_eval_dataset'
 
 
-def create_filter_paths_txt(dataset_path, train_path, eval_path, min_num_imgs, max_num_imgs):
+def _create_filter_paths_txt(dataset_path, train_path, eval_path, min_num_imgs, max_num_imgs):
     """
-       Generates all filtered image paths from a directory into a text file, with the params
+       Generates all filtered image paths from a directory into a text file, with the params we introduced before.
            Args:
                dataset_path: dataset directory path, with directory classes and their corresponding images.
                 Its been preprocessed with facenet repository.
-               out_path: text file path where the image paths are going to be saved.
-               min_num_imgs: number of imgs that each class need to have to consider to the new dataset.
+               train_path: text file path where the training image paths are going to be saved.
+               eval_path: text file path where the eval image paths are going to be saved.
+               min_num_imgs: number of imgs that each class need to have to consider to the new training dataset.
                max_num_imgs: maximum number of imgs that is going to be stored for each class.
     """
     with open(train_path, 'w') as out:
@@ -70,12 +71,14 @@ def create_filter_paths_txt(dataset_path, train_path, eval_path, min_num_imgs, m
                     out.write(img_path + '\n')
 
 
-def create_filtered_dataset(txt_train_path, txt_eval_path, filtered_dataset_train_path, filtered_dataset_eval_path):
+def _create_filtered_dataset(txt_train_path, txt_eval_path, filtered_dataset_train_path, filtered_dataset_eval_path):
     """
-       Creates the new filterd dataset based on a text file with the new image paths.
+       Creates the new filtered dataset based on a text file with the new image paths.
            Args:
-               txt_path: text file path with all the new image paths.
-               out_path: directory path where the new filtered dataset is going to be saved.
+               txt_train_path: text file path with all the new training image paths.
+               txt_eval_path: text file path with all the new eval image paths.
+               filtered_dataset_train_path: directory path where the new filtered  train dataset is going to be saved.
+               filtered_dataset_eval_path: directory path where the new filtered  eval dataset is going to be saved.
     """
     with open(txt_train_path, 'r') as file:
         if not os.path.exists(filtered_dataset_train_path):
@@ -104,29 +107,6 @@ def create_filtered_dataset(txt_train_path, txt_eval_path, filtered_dataset_trai
             line = line.replace("\n", "")
             basedir, file = line.split(dataset_path)
             new_path = filtered_dataset_eval_path + file
-            dir_path = os.path.dirname(new_path)
-
-            if not os.path.exists(dir_path):
-                os.mkdir(dir_path)
-
-            copyfile(line, new_path)
-
-
-def create_filtered_eval_dataset(txt_path, filtered_dataset_path):
-    """
-       Creates the new filterd dataset based on a text file with the new image paths.
-           Args:
-               txt_path: text file path with all the new image paths.
-               out_path: directory path where the new filtered dataset is going to be saved.
-    """
-    with open(txt_path, 'r') as file:
-
-        lines = file.readlines()
-
-        for i, line in enumerate(lines):
-            line = line.replace("\n", "")
-            basedir, file = line.split(dataset_path)
-            new_path = filtered_dataset_path + file
             dir_path = os.path.dirname(new_path)
 
             if not os.path.exists(dir_path):
