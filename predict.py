@@ -37,8 +37,8 @@ FLAGS = tf.app.flags.FLAGS
 tf.app.flags.DEFINE_string('ckpt_dir', './data/saves/', """Directory where to save and load the checkpoints. """)
 
 # Path of the images to compare.
-img_1_path = "/home/uc3m1/PycharmProjects/siameseFaceNet/data/test/asier1.jpeg"
-img_2_path = "/home/uc3m1/PycharmProjects/siameseFaceNet/data/test/sergio1.jpeg"
+img_1_path = "/home/uc3m1/PycharmProjects/siameseFaceNet/data/test/con gafas.jpeg"
+img_2_path = "/home/uc3m1/PycharmProjects/siameseFaceNet/data/test/sin gafas.jpeg"
 
 # The path to dlib’s pre-trained facial landmark detector.
 predictor_path = "/home/uc3m1/PycharmProjects/siameseFaceNet/data/align/shape_predictor_68_face_landmarks.dat"
@@ -47,7 +47,7 @@ predictor_path = "/home/uc3m1/PycharmProjects/siameseFaceNet/data/align/shape_pr
 dropout_keep_prob = 0.8
 num_classes = 2
 image_size = 182
-success_constraint = 0.999
+success_constraint = 0.99
 
 
 def align_face(img_path, img_size):
@@ -133,6 +133,7 @@ def predict(img_1, img_2, success_constraint):
                 logger.info("Both images are the same person")
             else:
                 logger.info("Both images are not the same person")
+            print(predicted.values[0][0])
 
 
 def main(argv=None):

@@ -56,7 +56,6 @@ def generate_txt_with_all_images(data_dir, path):
             for img in os.listdir(path):
                 img_path = os.path.join(path, img)
                 out.write(img_path + '\n')
-                print(img_path)
 
 
 def create_diff_dataset_txt(bottlenecks_dir, diff_dataset_txt_path,  num_tuples_per_class=3):
@@ -202,8 +201,8 @@ def main():
     #create_diff_dataset_txt(bottlenecks_train_dir, diff_dataset_txt_train_path, num_tuples_per_class)
     #create_diff_dataset_txt(bottlenecks_eval_dir, diff_dataset_txt_eval_path, num_tuples_per_class=1)
 
-    #generate_tfrecord_files(diff_dataset_txt_train_path, "./data/tfrecord_train_file")
-    #generate_tfrecord_files(diff_dataset_txt_eval_path, "./data/tfrecord_eval_file")
+    generate_tfrecord_files(diff_dataset_txt_train_path, "./data/tfrecord_train_file")
+    generate_tfrecord_files(diff_dataset_txt_eval_path, "./data/tfrecord_eval_file")
 
 
 if __name__ == '__main__':

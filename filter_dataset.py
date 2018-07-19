@@ -57,17 +57,19 @@ def _create_filter_paths_txt(dataset_path, train_path, eval_path, min_num_imgs, 
                 for i, img in enumerate(os.listdir(dir_path)):
                     if i >= max_num_imgs:
                         break
-                    print(i)
+
                     img_path = os.path.join(dir_path, img)
+
                     out.write(img_path + '\n')
+
     with open(eval_path, 'w') as out:
         for person in os.listdir(dataset_path):
             dir_path = os.path.join(dataset_path, person)
             if len(os.listdir(dir_path)) < min_num_imgs:
 
                 for i, img in enumerate(os.listdir(dir_path)):
-                    print(i)
                     img_path = os.path.join(dir_path, img)
+
                     out.write(img_path + '\n')
 
 
@@ -116,9 +118,9 @@ def _create_filtered_dataset(txt_train_path, txt_eval_path, filtered_dataset_tra
 
 
 def main():
-    #create_filter_paths_txt(dataset_path, txt_with_new_dataset_train_paths, txt_with_new_dataset_eval_paths,
+    #_create_filter_paths_txt(dataset_path, txt_with_new_dataset_train_paths, txt_with_new_dataset_eval_paths,
     #                        min_num_images_per_class, max_num_images_per_class)
-    #create_filtered_dataset(txt_with_new_dataset_train_paths, txt_with_new_dataset_eval_paths,
+    #_create_filtered_dataset(txt_with_new_dataset_train_paths, txt_with_new_dataset_eval_paths,
     #                        filtered_dataset_train_path, filtered_dataset_eval_path)
     pass
 

@@ -32,15 +32,16 @@ from datetime import datetime
 
 FLAGS = tf.app.flags.FLAGS
 
-tf.app.flags.DEFINE_string('log_dir', './data/logs/', """Directory where to write event logs. """)
-tf.app.flags.DEFINE_integer('max_steps', 2500, """Number of epochs to run.""")
-tf.app.flags.DEFINE_string('save_dir', './data/saves/', """Directory where to save and load the checkpoints. """)
+tf.app.flags.DEFINE_string('log_dir', './data/logs_van_32/', """Directory where to write event logs. """)
+tf.app.flags.DEFINE_integer('max_steps', 4000, """Number of epochs to run.""")
+tf.app.flags.DEFINE_string('save_dir', './data/saves_van_32/', """Directory where to save and load the checkpoints. """)
 tf.app.flags.DEFINE_string('tfrecord_file', './data/tfrecord_train_file', """File with the dataset to train. """)
 
 num_classes = 2
 dropout_keep_prob = 0.85
 learning_rate = 0.001
 batch_size = 32
+seed = 9
 
 
 def init_logger():
@@ -53,6 +54,8 @@ def init_logger():
 def train():
     with tf.Graph().as_default() as g:
         global_step = tf.train.get_or_create_global_step()
+        n = tf.placeholder(tf.float32)
+        tf.set_random_seed(seed)
 
         # Get the bottlenecks and labels from the dataset using the iterator
         iterator = data.create_iterator_for_diff(FLAGS.tfrecord_file, is_training=True, batch_size=batch_size)
@@ -62,10 +65,12 @@ def train():
         diff_bottlenecks_tensor = tf.abs(tf.subtract(bottlenecks_1_batch, bottlenecks_2_batch))
 
         # Obtain the logits from the bottlenecks difference.
-        logits = model.classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob, num_classes=num_classes)
+        logits = model.classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob=dropout_keep_prob, num_classes=num_classes)
+
+        predictions = tf.nn.top_k(logits, k=1)
 
         # Loss calculation
-        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=labels_batch)
+        loss = n * tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=labels_batch)
         cross_entropy_mean = tf.reduce_mean(loss, name='cross_entropy')
         tf.summary.scalar(name='loss', tensor=cross_entropy_mean)
 
@@ -81,6 +86,7 @@ def train():
         init = tf.global_variables_initializer()
 
         with tf.Session() as sess:
+            # Run the graph with value of n = 0
             sess.run(init)
 
             # Tensorborad options
@@ -92,13 +98,17 @@ def train():
             # Training loop. Set the max number of steps.
             for epoch in range(0, FLAGS.max_steps):
                 # We compute the image and label batch
-                sess.run([diff_bottlenecks_tensor, labels_batch])
+                predicted, labels_batch1 = sess.run([predictions, labels_batch], feed_dict={n: 1.0})
+                j = 1
+                #for i in range(batch_size):
+                #    if predicted.indices[i] == 1 and labels_batch1[i] == 0:
+                #       j += 1
 
                 # Merge all summary variables for Tensorborad
                 merge = tf.summary.merge_all()
 
                 # We do the training and compute the loss and the summaries
-                _, loss_val, summary = sess.run([train_op, cross_entropy_mean, merge])
+                _, loss_val, summary = sess.run([train_op, cross_entropy_mean, merge], feed_dict={n: j})
 
                 # Tensorboard update
                 if epoch % 10 is 0:

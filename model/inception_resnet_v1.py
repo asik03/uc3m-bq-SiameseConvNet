@@ -243,7 +243,7 @@ def inception_resnet_v1(inputs, is_training=True, dropout_keep_prob=0.8, reuse=N
     return bottleneck, end_points
 
 
-def classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob, num_classes, is_training=True):
+def classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob=0.85, num_classes=2, is_training=True):
     """
     Creates the classifier model.
         Args:
@@ -264,31 +264,31 @@ def classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob, num_classes
 
         # Creates a fully connected layer
         net = slim.fully_connected(net, 512, activation_fn=tf.nn.sigmoid,
-                                   weights_initializer=tf.truncated_normal_initializer(stddev=0.01),
+                                   weights_initializer=tf.truncated_normal_initializer(stddev=0.01, seed=2),
                                    scope='FC_1')
 
-        tf.summary.histogram(name='Weights',
+        tf.summary.histogram(name='Weights_1',
                              values=tf.get_default_graph().get_tensor_by_name('classify/FC_1/weights:0'))
-        tf.summary.histogram(name='Biases',
+        tf.summary.histogram(name='Biases_1',
                              values=tf.get_default_graph().get_tensor_by_name('classify/FC_1/biases:0'))
 
-        net = slim.dropout(net, dropout_keep_prob, scope='Dropout_2b', is_training=is_training)
+        net = slim.dropout(net, dropout_keep_prob, scope='Dropout', is_training=is_training)
 
-        net = slim.fully_connected(net, num_classes, activation_fn=None,
-                                   weights_initializer=tf.truncated_normal_initializer(stddev=0.01),
+        pre_softmax = slim.fully_connected(net, num_classes, activation_fn=None,
+                                   weights_initializer=tf.truncated_normal_initializer(stddev=0.01, seed=4),
                                    scope='FC_2')
 
-        tf.summary.histogram(name='Weights',
+        tf.summary.histogram(name='Weights_2',
                              values=tf.get_default_graph().get_tensor_by_name('classify/FC_2/weights:0'))
-        tf.summary.histogram(name='Biases',
+        tf.summary.histogram(name='Biases_2',
                              values=tf.get_default_graph().get_tensor_by_name('classify/FC_2/biases:0'))
 
-        end_points['pre_softmax'] = net
+        end_points['pre_softmax'] = pre_softmax
 
-        net = slim.softmax(net)
+        net = slim.softmax(pre_softmax)
 
         end_points['Logits'] = net
 
         tf.add_to_collection('classify', net)
 
-    return net, end_points['pre_softmax']
+    return net

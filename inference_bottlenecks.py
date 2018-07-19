@@ -51,7 +51,7 @@ def inference_bottlenecks(imgs_path, dir_bottlenecks):
         iterator = data.create_bottleneck_iterator(imgs_path)
         img, path_tensor = iterator.get_next()
 
-        # Bottlenek inferences
+        # Bottleneck inferences
         bottleneck_tensor, end_points = resnet_bottleneck(img, phase_train=False)
 
         if not os.path.exists(dir_bottlenecks):
@@ -95,3 +95,5 @@ def inference_bottlenecks(imgs_path, dir_bottlenecks):
 if __name__ == '__main__':
     inference_bottlenecks(img_paths_txt_train_path, bottlenecks_train_dir)
     inference_bottlenecks(img_paths_txt_eval_path, bottlenecks_eval_dir)
+    pass
+

@@ -31,15 +31,13 @@ from model import inception_resnet_v1 as model
 
 FLAGS = tf.app.flags.FLAGS
 
-tf.app.flags.DEFINE_string('log_dir', './data/logs/', """Directory where to write event logs. """)
-tf.app.flags.DEFINE_string('ckpt_dir', './data/saves/', """Directory where to save and load the checkpoints. """)
+tf.app.flags.DEFINE_string('ckpt_dir', './data/saves_van_32/', """Directory where to save and load the checkpoints. """)
 tf.app.flags.DEFINE_string('tfrecord_file', './data/tfrecord_eval_file', """File with the dataset to train. """)
-tf.app.flags.DEFINE_string('batch_size', '1', """Batch size""")
 
-dropout_keep_prob = 0.8
+dropout_keep_prob = 0.85
 num_classes = 2
 batch_size = 1
-success_constraint = 0.9999
+success_constraint = 0.998
 
 
 def eval():
@@ -53,7 +51,7 @@ def eval():
         diff_bottlenecks_tensor = tf.abs(tf.subtract(bottlenecks_1_batch, bottlenecks_2_batch))
 
         # Get the logits from the classify model.
-        logits, pre_softmax = model.classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob, num_classes=num_classes, is_training=False)
+        logits = model.classify_bottlenecks(diff_bottlenecks_tensor, num_classes=num_classes, is_training=False)
 
         # Get the class with the highest score
         predictions = tf.nn.top_k(logits, k=1)
@@ -84,7 +82,7 @@ def eval():
             while exec_next_step is True:
                 try:
                     # Obtain the prediction(s) and the label(s) of each step.
-                    predicted, label, real_value = sess.run([predictions, labels_batch, pre_softmax])
+                    predicted, label = sess.run([predictions, labels_batch])
 
                     # Using auxiliary parameter to check the results later.
                     if predicted.indices[0][0] == 0:
