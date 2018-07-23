@@ -31,18 +31,21 @@ from model import inception_resnet_v1 as model
 
 FLAGS = tf.app.flags.FLAGS
 
-tf.app.flags.DEFINE_string('ckpt_dir', './data/saves_van_32/', """Directory where to save and load the checkpoints. """)
+tf.app.flags.DEFINE_string('ckpt_dir', './data/saves/saves_31_mk_16/', """Directory where to save and load the checkpoints. """)
 tf.app.flags.DEFINE_string('tfrecord_file', './data/tfrecord_eval_file', """File with the dataset to train. """)
 
 dropout_keep_prob = 0.85
 num_classes = 2
 batch_size = 1
-success_constraint = 0.998
+success_constraint = 0.90
+seed = 31
 
 
 def eval():
 
     with tf.Graph().as_default():
+        tf.set_random_seed(seed)
+
         # Create dataset iterator of batch 1, obtaining the statistics correctly
         iterator = data.create_iterator_for_diff(FLAGS.tfrecord_file, is_training=False, batch_size=batch_size)
         bottlenecks_1_batch, bottlenecks_2_batch, labels_batch = iterator.get_next()
@@ -113,6 +116,7 @@ def eval():
                     logger.info("Total true success: %i", true_success)
                     logger.info("Total false success: %i", false_success)
                     logger.info("Total: %i", false_positives + false_negatives + true_success + false_success)
+                    logger.info(success_constraint)
                     exec_next_step = False
 
 

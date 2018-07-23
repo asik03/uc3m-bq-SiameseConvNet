@@ -31,17 +31,16 @@ from model import inception_resnet_v1 as model
 from datetime import datetime
 
 FLAGS = tf.app.flags.FLAGS
-
-tf.app.flags.DEFINE_string('log_dir', './data/logs_van_32/', """Directory where to write event logs. """)
+tf.app.flags.DEFINE_string('log_dir', './data/logs/logs_31_mk_16/', """Directory where to write event logs. """)
 tf.app.flags.DEFINE_integer('max_steps', 4000, """Number of epochs to run.""")
-tf.app.flags.DEFINE_string('save_dir', './data/saves_van_32/', """Directory where to save and load the checkpoints. """)
+tf.app.flags.DEFINE_string('save_dir', './data/saves/saves_31_mk_16/', """Directory where to save and load the checkpoints. """)
 tf.app.flags.DEFINE_string('tfrecord_file', './data/tfrecord_train_file', """File with the dataset to train. """)
 
 num_classes = 2
 dropout_keep_prob = 0.85
 learning_rate = 0.001
-batch_size = 32
-seed = 9
+batch_size = 16
+seed = 31
 
 
 def init_logger():
@@ -67,6 +66,7 @@ def train():
         # Obtain the logits from the bottlenecks difference.
         logits = model.classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob=dropout_keep_prob, num_classes=num_classes)
 
+        # Used to calculate the class prediction for the training extra loss.
         predictions = tf.nn.top_k(logits, k=1)
 
         # Loss calculation
@@ -100,9 +100,9 @@ def train():
                 # We compute the image and label batch
                 predicted, labels_batch1 = sess.run([predictions, labels_batch], feed_dict={n: 1.0})
                 j = 1
-                #for i in range(batch_size):
-                #    if predicted.indices[i] == 1 and labels_batch1[i] == 0:
-                #       j += 1
+                for i in range(batch_size):
+                    if predicted.indices[i] == 1 and labels_batch1[i] == 0:
+                        j += 1
 
                 # Merge all summary variables for Tensorborad
                 merge = tf.summary.merge_all()

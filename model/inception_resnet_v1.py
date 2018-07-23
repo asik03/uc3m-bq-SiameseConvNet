@@ -264,7 +264,7 @@ def classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob=0.85, num_cl
 
         # Creates a fully connected layer
         net = slim.fully_connected(net, 512, activation_fn=tf.nn.sigmoid,
-                                   weights_initializer=tf.truncated_normal_initializer(stddev=0.01, seed=2),
+                                   weights_initializer=tf.truncated_normal_initializer(stddev=0.01, seed=31),
                                    scope='FC_1')
 
         tf.summary.histogram(name='Weights_1',
@@ -275,7 +275,7 @@ def classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob=0.85, num_cl
         net = slim.dropout(net, dropout_keep_prob, scope='Dropout', is_training=is_training)
 
         pre_softmax = slim.fully_connected(net, num_classes, activation_fn=None,
-                                   weights_initializer=tf.truncated_normal_initializer(stddev=0.01, seed=4),
+                                   weights_initializer=tf.truncated_normal_initializer(stddev=0.01, seed=31),
                                    scope='FC_2')
 
         tf.summary.histogram(name='Weights_2',
