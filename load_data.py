@@ -33,7 +33,7 @@ image_size = 182
 
 def create_bottleneck_iterator(data):
     """
-    Creates an Tensorflow iterator used for the bottleneck inferences.
+    Creates a Tensorflow iterator used for the bottleneck inferences.
         Args:
             data: txt file path with the corresponding data.
         Return:

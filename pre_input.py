@@ -198,8 +198,8 @@ def main():
 
     '''Create bottlenecks with "inferece_bottlecks.py first"'''
 
-    #create_diff_dataset_txt(bottlenecks_train_dir, diff_dataset_txt_train_path, num_tuples_per_class)
-    #create_diff_dataset_txt(bottlenecks_eval_dir, diff_dataset_txt_eval_path, num_tuples_per_class=1)
+    # create_diff_dataset_txt(bottlenecks_train_dir, diff_dataset_txt_train_path, num_tuples_per_class)
+    # create_diff_dataset_txt(bottlenecks_eval_dir, diff_dataset_txt_eval_path, num_tuples_per_class=1)
 
     generate_tfrecord_files(diff_dataset_txt_train_path, "./data/tfrecord_train_file")
     generate_tfrecord_files(diff_dataset_txt_eval_path, "./data/tfrecord_eval_file")

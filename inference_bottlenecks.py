@@ -38,13 +38,15 @@ bottlenecks_eval_dir = "./data/eval_bottlenecks/"
 img_paths_txt_train_path = "./data/all_img_train_paths.txt"
 img_paths_txt_eval_path = "./data/all_img_eval_paths.txt"
 
+model_weights = './data/weights/model-20180408-102900.ckpt-90'
 
-def inference_bottlenecks(imgs_path, dir_bottlenecks):
+
+def _inference_bottlenecks(imgs_path, dir_bottlenecks):
     """
     Bottlenecks generator.
         Args:
             imgs_path: txt path file with a list of image paths, one per each row.
-            dir_bottlenecks: directory where to save the bottleneck.
+            dir_bottlenecks: directory where to save the bottlenecks.
     """
     with tf.Graph().as_default():
         # Get the image from the dataset using the iterator
@@ -68,8 +70,9 @@ def inference_bottlenecks(imgs_path, dir_bottlenecks):
             sess.run(init_global)
             sess.run(init_local)
 
+            # TODO: chenge model path as new variable
             # Restore the pretrained model from FaceNet
-            saver.restore(sess, './data/weights/model-20180408-102900.ckpt-90')
+            saver.restore(sess, model_weights)
 
             for i in range(0, 100000):
                 try:
@@ -93,7 +96,7 @@ def inference_bottlenecks(imgs_path, dir_bottlenecks):
 
 
 if __name__ == '__main__':
-    inference_bottlenecks(img_paths_txt_train_path, bottlenecks_train_dir)
-    inference_bottlenecks(img_paths_txt_eval_path, bottlenecks_eval_dir)
+    _inference_bottlenecks(img_paths_txt_train_path, bottlenecks_train_dir)
+    _inference_bottlenecks(img_paths_txt_eval_path, bottlenecks_eval_dir)
     pass
 
