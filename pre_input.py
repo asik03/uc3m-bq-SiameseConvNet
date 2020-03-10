@@ -83,7 +83,8 @@ def create_diff_dataset_txt(bottlenecks_dir, diff_dataset_txt_path,  num_tuples_
             for i in range(num_tuples_per_class):
                 npy_path_1 = get_random_item_from_class(class_path)
 
-                comparing_class = get_random_class(bottlenecks_dir, exclude=os.listdir(bottlenecks_dir).index(class_name))
+                comparing_class = get_random_class(bottlenecks_dir,
+                                                   exclude=os.listdir(bottlenecks_dir).index(class_name))
                 npy_path_2 = get_random_item_from_class(os.path.join(bottlenecks_dir, comparing_class))
 
                 out.write(npy_path_1 + ' ' + npy_path_2 + ' 0' + '\n')
@@ -193,8 +194,8 @@ def _get_image_and_label_from_entry(entry):
 
 
 def main():
-    #generate_txt_with_all_images(filtered_train_data_dir, img_paths_txt_train_path)
-    #generate_txt_with_all_images(filtered_eval_data_dir, img_paths_txt_eval_path)
+    # generate_txt_with_all_images(filtered_train_data_dir, img_paths_txt_train_path)
+    # generate_txt_with_all_images(filtered_eval_data_dir, img_paths_txt_eval_path)
 
     '''Create bottlenecks with "inferece_bottlecks.py first"'''
 
@@ -207,6 +208,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
