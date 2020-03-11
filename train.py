@@ -23,9 +23,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
 import tensorflow as tf
 import logging
 import load_data as data
+
 
 from model import inception_resnet_v1 as model
 from datetime import datetime
@@ -36,11 +38,13 @@ tf.app.flags.DEFINE_integer('max_steps', 4000, """Number of epochs to run.""")
 tf.app.flags.DEFINE_string('save_dir', './data/saves/saves_31_mk_16/', """Directory where to save and load the checkpoints. """)
 tf.app.flags.DEFINE_string('tfrecord_file', './data/tfrecord_train_file', """File with the dataset to train. """)
 
-num_classes = 2
-dropout_keep_prob = 0.85
-learning_rate = 0.001
-batch_size = 16
-seed = 31
+
+# Hiperparameters for the training step
+num_classes = 2             # Number of neurons in the final layer of the net.
+dropout_keep_prob = 0.85    # Estimated proportion of neurons to be kept from the dropout. Dropout equals 1 - dropout_keep_prob.
+learning_rate = 0.001       # Learning rate of the optimizer.
+batch_size = 16             # Number of elements of input on each "round".
+seed = 31                   # Value used to set a random fixed value to the random variables.
 
 
 def init_logger():
@@ -51,6 +55,10 @@ def init_logger():
 
 
 def train():
+    if not os.path.exists(FLAGS.save_dir):
+        if not os.path.exists('./data/saves/'):
+            os.mkdir('./data/saves/')
+        os.mkdir(FLAGS.save_dir)
     with tf.Graph().as_default() as g:
         global_step = tf.train.get_or_create_global_step()
         n = tf.placeholder(tf.float32)
@@ -69,7 +77,7 @@ def train():
         # Used to calculate the class prediction for the training extra loss.
         predictions = tf.nn.top_k(logits, k=1)
 
-        # Loss calculation
+        # Loss calculation. N depends on the accuracy of the previous batch. Bad accurate will generate extra loss.
         loss = n * tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=labels_batch)
         cross_entropy_mean = tf.reduce_mean(loss, name='cross_entropy')
         tf.summary.scalar(name='loss', tensor=cross_entropy_mean)

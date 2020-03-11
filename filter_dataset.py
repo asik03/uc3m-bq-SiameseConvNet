@@ -29,7 +29,7 @@ import os
 
 from shutil import copyfile
 
-dataset_path = './data/datasets/lfw_mtcnnpy_182'  # Dataset obtained from LFW dataset, preprocessed with faceNet.
+dataset_path = './data/datasets/lfw'  # Dataset obtained from LFW dataset, preprocessed with faceNet.
 min_num_images_per_class = 15
 max_num_images_per_class = 75
 txt_with_new_dataset_train_paths = './data/datasets/filtered_dataset_train_paths'
@@ -73,25 +73,23 @@ def _create_filter_paths_txt(dataset_path, train_path, eval_path, min_num_imgs, 
                     out.write(img_path + '\n')
 
 
-def _create_filtered_dataset(txt_train_path, txt_eval_path, filtered_dataset_train_path, filtered_dataset_eval_path):
+def _create_filtered_dataset(txt_paths_file, filtered_dataset_path):
     """
        Creates the new filtered dataset based on a text file with the new image paths.
            Args:
-               txt_train_path: text file path with all the new training image paths.
-               txt_eval_path: text file path with all the new eval image paths.
-               filtered_dataset_train_path: directory path where the new filtered  train dataset is going to be saved.
-               filtered_dataset_eval_path: directory path where the new filtered  eval dataset is going to be saved.
+               txt_paths_file: text file path with all the new image paths (input).
+               filtered_dataset_path: directory path where the new filtered dataset is going to be saved (output).
     """
-    with open(txt_train_path, 'r') as file:
-        if not os.path.exists(filtered_dataset_train_path):
-            os.mkdir(filtered_dataset_train_path)
+    with open(txt_paths_file, 'r') as file:
+        if not os.path.exists(filtered_dataset_path):
+            os.mkdir(filtered_dataset_path)
 
         lines = file.readlines()
 
         for i, line in enumerate(lines):
             line = line.replace("\n", "")
             basedir, file = line.split(dataset_path)
-            new_path = filtered_dataset_train_path + file
+            new_path = filtered_dataset_path + file
             dir_path = os.path.dirname(new_path)
 
             if not os.path.exists(dir_path):
@@ -99,29 +97,57 @@ def _create_filtered_dataset(txt_train_path, txt_eval_path, filtered_dataset_tra
 
             copyfile(line, new_path)
 
-    with open(txt_eval_path, 'r') as file:
-        if not os.path.exists(filtered_dataset_eval_path):
-            os.mkdir(filtered_dataset_eval_path)
 
-        lines = file.readlines()
-
-        for i, line in enumerate(lines):
-            line = line.replace("\n", "")
-            basedir, file = line.split(dataset_path)
-            new_path = filtered_dataset_eval_path + file
-            dir_path = os.path.dirname(new_path)
-
-            if not os.path.exists(dir_path):
-                os.mkdir(dir_path)
-
-            copyfile(line, new_path)
-
+# def _create_filtered_dataset_bad(txt_train_path, txt_eval_path, filtered_dataset_train_path, filtered_dataset_eval_path):
+#     """
+#        Creates the new filtered dataset based on a text file with the new image paths.
+#            Args:
+#                txt_train_path: text file path with all the new training image paths.
+#                txt_eval_path: text file path with all the new eval image paths.
+#                filtered_dataset_train_path: directory path where the new filtered  train dataset is going to be saved.
+#                filtered_dataset_eval_path: directory path where the new filtered  eval dataset is going to be saved.
+#     """
+#     with open(txt_train_path, 'r') as file:
+#         if not os.path.exists(filtered_dataset_train_path):
+#             os.mkdir(filtered_dataset_train_path)
+#
+#         lines = file.readlines()
+#
+#         for i, line in enumerate(lines):
+#             line = line.replace("\n", "")
+#             basedir, file = line.split(dataset_path)
+#             new_path = filtered_dataset_train_path + file
+#             dir_path = os.path.dirname(new_path)
+#
+#             if not os.path.exists(dir_path):
+#                 os.mkdir(dir_path)
+#
+#             copyfile(line, new_path)
+#
+#     with open(txt_eval_path, 'r') as file:
+#         if not os.path.exists(filtered_dataset_eval_path):
+#             os.mkdir(filtered_dataset_eval_path)
+#
+#         lines = file.readlines()
+#
+#         for i, line in enumerate(lines):
+#             line = line.replace("\n", "")
+#             basedir, file = line.split(dataset_path)
+#             new_path = filtered_dataset_eval_path + file
+#             dir_path = os.path.dirname(new_path)
+#
+#             if not os.path.exists(dir_path):
+#                 os.mkdir(dir_path)
+#
+#             copyfile(line, new_path)
+#
 
 def main():
     #_create_filter_paths_txt(dataset_path, txt_with_new_dataset_train_paths, txt_with_new_dataset_eval_paths,
-    #                        min_num_images_per_class, max_num_images_per_class)
-    #_create_filtered_dataset(txt_with_new_dataset_train_paths, txt_with_new_dataset_eval_paths,
-    #                        filtered_dataset_train_path, filtered_dataset_eval_path)
+    #                       min_num_images_per_class, max_num_images_per_class)
+    _create_filtered_dataset(txt_with_new_dataset_train_paths, filtered_dataset_train_path)
+
+    _create_filtered_dataset(txt_with_new_dataset_eval_paths, filtered_dataset_eval_path)
     pass
 
 

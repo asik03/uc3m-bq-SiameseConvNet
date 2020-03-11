@@ -44,10 +44,10 @@ img_2_path = "/home/uc3m1/PycharmProjects/siameseFaceNet/data/test/sin gafas.jpe
 predictor_path = "/home/uc3m1/PycharmProjects/siameseFaceNet/data/align/shape_predictor_68_face_landmarks.dat"
 
 # Model parameters.
-dropout_keep_prob = 0.8
-num_classes = 2
-image_size = 182
-success_constraint = 0.99
+num_classes = 2             # Number of neurons in the final layer of the net.
+dropout_keep_prob = 0.85    # Estimated proportion of neurons to be kept from the dropout. Dropout equals 1 - dropout_keep_prob.
+image_size = 182            # Used to set the face align before the prediction.
+success_constraint = 0.99   # Used to set the success boundary to consider same person in both images.
 
 
 def align_face(img_path, img_size):
