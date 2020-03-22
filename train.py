@@ -32,11 +32,14 @@ import load_data as data
 from model import inception_resnet_v1 as model
 from datetime import datetime
 
+model_name = "inceptionresnetv1"
+#model_name = "mobilenetv2"
+
 FLAGS = tf.app.flags.FLAGS
-tf.app.flags.DEFINE_string('log_dir', './data/logs/logs_31_mk_16/', """Directory where to write event logs. """)
+tf.app.flags.DEFINE_string('log_dir', './data/' + model_name + '/logs/logs_31_mk_16/', """Directory where to write event logs. """)
 tf.app.flags.DEFINE_integer('max_steps', 4000, """Number of epochs to run.""")
-tf.app.flags.DEFINE_string('save_dir', './data/saves/saves_31_mk_16/', """Directory where to save and load the checkpoints. """)
-tf.app.flags.DEFINE_string('tfrecord_file', './data/tfrecord_train_file', """File with the dataset to train. """)
+tf.app.flags.DEFINE_string('save_dir', './data/' + model_name + '/saves/saves_31_mk_16/', """Directory where to save and load the checkpoints. """)
+tf.app.flags.DEFINE_string('tfrecord_file', './data/' + model_name + '/tfrecord_train_file', """File with the dataset to train. """)
 
 
 # Hiperparameters for the training step
@@ -56,8 +59,8 @@ def init_logger():
 
 def train():
     if not os.path.exists(FLAGS.save_dir):
-        if not os.path.exists('./data/saves/'):
-            os.mkdir('./data/saves/')
+        if not os.path.exists("./data/" + model_name + "/saves/"):
+            os.makedirs("./data/" + model_name + "/saves/")
         os.mkdir(FLAGS.save_dir)
     with tf.Graph().as_default() as g:
         global_step = tf.train.get_or_create_global_step()
@@ -67,10 +70,13 @@ def train():
         # Get the bottlenecks and labels from the dataset using the iterator
         iterator = data.create_iterator_for_diff(FLAGS.tfrecord_file, is_training=True, batch_size=batch_size)
         bottlenecks_1_batch, bottlenecks_2_batch, labels_batch = iterator.get_next()
+        print(bottlenecks_1_batch)
+        print(tf.shape(bottlenecks_1_batch))
 
         # Get the absolute difference bottlenecks, using tensorflow functions.
         diff_bottlenecks_tensor = tf.abs(tf.subtract(bottlenecks_1_batch, bottlenecks_2_batch))
-
+        print(tf.shape(diff_bottlenecks_tensor))
+        print(diff_bottlenecks_tensor)
         # Obtain the logits from the bottlenecks difference.
         logits = model.classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob=dropout_keep_prob, num_classes=num_classes)
 

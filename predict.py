@@ -87,8 +87,8 @@ def predict(img_1, img_2, success_constraint):
         img_2 = tf.expand_dims(img_2, 0)
 
         # Make both bottleneck inferences.
-        bottleneck_1, end_points_1 = model.resnet_bottleneck(img_1, phase_train=False)
-        bottleneck_2, end_points_2 = model.resnet_bottleneck(img_2, phase_train=False)
+        bottleneck_1, end_points_1 = model.compute_bottleneck(img_1, phase_train=False)
+        bottleneck_2, end_points_2 = model.compute_bottleneck(img_2, phase_train=False)
 
         # Absolute difference between both bottlenecks.
         diff_bottlenecks_tensor = tf.abs(tf.subtract(bottleneck_1, bottleneck_2))

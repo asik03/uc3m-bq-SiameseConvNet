@@ -28,7 +28,7 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-image_size = 182
+image_size = 224
 
 
 def create_bottleneck_iterator(data):
@@ -127,6 +127,8 @@ def _parse(serialized):
     feature = {
         'bottleneck_1': tf.FixedLenFeature((1792,), tf.float32),
         'bottleneck_2': tf.FixedLenFeature((1792,), tf.float32),
+        #'bottleneck_1': tf.FixedLenFeature((1280,), tf.float32),
+        #'bottleneck_2': tf.FixedLenFeature((1280,), tf.float32),
         'label': tf.FixedLenFeature([], tf.int64),
     }
 

@@ -29,16 +29,21 @@ import load_data as data
 
 from model import inception_resnet_v1 as model
 
+#model_name = "mobilenetv2"
+model_name = "inceptionresnetv1"
+
 FLAGS = tf.app.flags.FLAGS
 
-tf.app.flags.DEFINE_string('ckpt_dir', './data/saves/saves_31_mk_16/', """Directory where to save and load the checkpoints. """)
-tf.app.flags.DEFINE_string('tfrecord_file', './data/tfrecord_eval_file', """File with the dataset to train. """)
+tf.app.flags.DEFINE_string('ckpt_dir', './data/' + model_name + '/saves/saves_31_mk_16/./', """Directory where to save and load the checkpoints. """)
+ckpt_dir = 'D:/PycharmProjects/uc3m-bq-SiameseConvNet/data/' + model_name + '/saves/saves_31_mk_16/./'
+#tf.app.flags.DEFINE_string('tfrecord_file', './data/' + model_name + '/tfrecord_test_file', """File with the dataset to train. """)
+tf.app.flags.DEFINE_string('tfrecord_file', 'D:/PycharmProjects/uc3m-bq-SiameseConvNet/data/' + model_name + '/tfrecord_test_file', """File with the dataset to train. """)
 
 # TODO: explicar parametros
 num_classes = 2             # Number of neurons in the final layer of the net.
 dropout_keep_prob = 0.85    # Estimated proportion of neurons to be kept from the dropout. Dropout equals 1 - dropout_keep_prob.
 batch_size = 1              # Number of elements of input on each "round".
-success_constraint = 0.90   # Used to set the success boundary to consider same person in both images.
+success_constraint = 0.8   # Used to set the success boundary to consider same person in both images.
 seed = 31                   # Value used to set a random fixed value to the random variables.
 
 
@@ -71,9 +76,10 @@ def eval():
 
         with tf.Session() as sess:
             sess.run(init)
+            #saver = tf.train.import_meta_graph('D:/PycharmProjects/uc3m-bq-SiameseConvNet/data/mobilenetv2/saves/saves_31_mk_16/-4000.meta')
 
             # Restoring the classifier model
-            saver.restore(sess, tf.train.latest_checkpoint(FLAGS.ckpt_dir))
+            saver.restore(sess, tf.train.latest_checkpoint(ckpt_dir))
 
             # Auxiliary variables
             predicted_label = 0
@@ -117,6 +123,7 @@ def eval():
                     logger.info("Total true success: %i", true_success)
                     logger.info("Total false success: %i", false_success)
                     logger.info("Total: %i", false_positives + false_negatives + true_success + false_success)
+                    logger.info("ACCURACY: %i ", (true_success + false_success) / (false_positives + false_negatives + true_success + false_success)*100)
                     # TODO: accuracy and so on metrics
                     # ROC matrix
                     logger.info(success_constraint)

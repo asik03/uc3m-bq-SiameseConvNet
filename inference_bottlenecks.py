@@ -30,18 +30,24 @@ import tensorflow as tf
 import numpy as np
 import load_data as data
 
-from model.inception_resnet_v1 import resnet_bottleneck
+from model.inception_resnet_v1 import compute_bottleneck
+#from model.mobilenetv2 import compute_bottleneck
+# img size: 182
+model = "inceptionresnetv1"
 
-bottlenecks_train_dir = "./data/train_bottlenecks/"
-bottlenecks_eval_dir = "./data/eval_bottlenecks/"
+bottlenecks_train_dir = "./data/" + model + "/train_bottlenecks/"
+bottlenecks_eval_dir = "./data/" + model + "/eval_bottlenecks/"
 
-img_paths_txt_train_path = "./data/all_img_train_paths.txt"
-img_paths_txt_eval_path = "./data/all_img_eval_paths.txt"
+img_paths_txt_train_path = "./data/" + model + "/all_img_train_paths.txt"
+img_paths_txt_eval_path = "./data/" + model + "/all_img_eval_paths.txt"
 
-model_weights = './data/weights/model-20180408-102900.ckpt-90'
+#model_weights = "./data/" + model + "/weights/model-20180408-102900.ckpt-90" #change img_size to 182
+
+#model_weights = "./data/" + model + "/weights/model.ckpt-192432" # change img_size to 224
+model_weights = "./data/" + model + "/weights/model-20180408-102900.ckpt-90" # change img_size to 224
 
 
-def _inference_bottlenecks(imgs_path, dir_bottlenecks):
+def inference_bottlenecks(imgs_path, dir_bottlenecks):
     """
     Bottlenecks generator.
         Args:
@@ -54,10 +60,10 @@ def _inference_bottlenecks(imgs_path, dir_bottlenecks):
         img, path_tensor = iterator.get_next()
 
         # Bottleneck inferences
-        bottleneck_tensor, end_points = resnet_bottleneck(img, phase_train=False)
+        bottleneck_tensor, end_points = compute_bottleneck(img, phase_train=False)
 
         if not os.path.exists(dir_bottlenecks):
-            os.mkdir(dir_bottlenecks)
+            os.makedirs(dir_bottlenecks)
 
         # Initializers
         init_global = tf.initializers.global_variables()
@@ -70,7 +76,6 @@ def _inference_bottlenecks(imgs_path, dir_bottlenecks):
             sess.run(init_global)
             sess.run(init_local)
 
-            # TODO: chenge model path as new variable
             # Restore the pretrained model from FaceNet
             saver.restore(sess, model_weights)
 
@@ -89,14 +94,13 @@ def _inference_bottlenecks(imgs_path, dir_bottlenecks):
 
                     np.save(new_path, bottleneck)
                     print("Bottleneck", i, "saved at:", new_path)
-
                 except tf.errors.OutOfRangeError:
                     print('Finished.')
                     break
 
 
 if __name__ == '__main__':
-    _inference_bottlenecks(img_paths_txt_train_path, bottlenecks_train_dir)
-    _inference_bottlenecks(img_paths_txt_eval_path, bottlenecks_eval_dir)
+    inference_bottlenecks(img_paths_txt_train_path, bottlenecks_train_dir)
+    inference_bottlenecks(img_paths_txt_eval_path, bottlenecks_eval_dir)
     pass
 
