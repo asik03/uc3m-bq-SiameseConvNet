@@ -205,11 +205,11 @@ def main():
 
     """Create bottlenecks with 'inferece_bottlecks.py' first"""
     import inference_bottlenecks
-    inference_bottlenecks.inference_bottlenecks(img_paths_txt_eval_path, bottlenecks_train_dir)
-    inference_bottlenecks.inference_bottlenecks(img_paths_txt_train_path, bottlenecks_eval_dir)
+    inference_bottlenecks.inference_bottlenecks(img_paths_txt_eval_path, bottlenecks_train_dir, model)
+    inference_bottlenecks.inference_bottlenecks(img_paths_txt_train_path, bottlenecks_eval_dir, model)
 
     create_diff_dataset_txt(bottlenecks_train_dir, diff_dataset_txt_train_path, num_tuples_per_class)
-    create_diff_dataset_txt(bottlenecks_eval_dir, diff_dataset_txt_eval_path, num_tuples_per_class=1)
+    create_diff_dataset_txt(bottlenecks_eval_dir, diff_dataset_txt_eval_path, num_tuples_per_class=3)
 
     generate_tfrecord_files(diff_dataset_txt_train_path, tfrecord_train_file_path)
     generate_tfrecord_files(diff_dataset_txt_eval_path, tfrecord_test_file_path)

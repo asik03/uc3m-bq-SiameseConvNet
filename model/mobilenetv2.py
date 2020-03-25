@@ -69,7 +69,7 @@ def compute_bottleneck(images, keep_probability=0.8, phase_train=True, weight_de
 
 
 def mobilenet_v2(inputs,
-                 num_classes=1280,
+                 num_classes=10, # Fixed to 10 at the moment, needed for the pretrained weights used
                  dropout_keep_prob=0.999,
                  is_training=True,
                  depth_multiplier=1.0,
@@ -104,29 +104,27 @@ def mobilenet_v2(inputs,
 
             net = slim.conv2d(net, 1280, [1, 1], scope='last_bottleneck')
 
-            net = slim.avg_pool2d(net, [7, 7])
+            bottleneck = slim.avg_pool2d(net, [7, 7])
 
-            print(net)
-            print(tf.shape(net))
+            print(bottleneck)
+            print(tf.shape(bottleneck))
 
-            net = slim.conv2d(net, num_classes, [1, 1], activation_fn=None, normalizer_fn=None, scope='features')
+            features = slim.conv2d(bottleneck, num_classes, [1, 1], activation_fn=None, normalizer_fn=None, scope='features')
 
-            print(net)
-            print(tf.shape(net))
+            print(features)
+            print(tf.shape(features))
 
-            net = slim.avg_pool2d(net, net.get_shape()[1:3], padding='VALID')
+            # net = slim.avg_pool2d(features, features.get_shape()[1:3], padding='VALID')
 
-
-            net = slim.flatten(net)
-
-            print(net)
-            print(tf.shape(net))
-            bottleneck = net
+            bottleneck = slim.flatten(bottleneck)
+            bottleneck = slim.dropout(bottleneck, dropout_keep_prob, is_training=is_training, scope='Dropout')
+            print(bottleneck)
+            print(tf.shape(bottleneck))
             # elimina las dimensiones de tamaño 1
 #            if spatial_squeeze:
 #                net = tf.squeeze(net, [1, 2], name='SpatialSqueeze')
 
-            endpoints['Logits'] = net
+            endpoints['Logits'] = features
             endpoints['PreLogitsFlatten'] = bottleneck
 
             #softmax
