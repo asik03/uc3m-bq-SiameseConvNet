@@ -132,7 +132,7 @@ def reduction_b(net):
     return net
 
 
-def resnet_bottleneck(images, keep_probability=0.8, phase_train=True, weight_decay=0.0, reuse=None):
+def compute_bottleneck(images, keep_probability=0.8, phase_train=True, weight_decay=0.0, reuse=None):
     batch_norm_params = {
         # Decay for the moving averages.
         'decay': 0.995,

@@ -29,14 +29,20 @@ import random
 import tensorflow as tf
 import numpy as np
 
-filtered_train_data_dir = './data/datasets/filtered_train_dataset'
-filtered_eval_data_dir = './data/datasets/filtered_eval_dataset'
-img_paths_txt_train_path = "./data/all_img_train_paths.txt"
-img_paths_txt_eval_path = "./data/all_img_eval_paths.txt"
-diff_dataset_txt_train_path = "./data/diff_train_dataset.txt"
-diff_dataset_txt_eval_path = "./data/diff_eval_dataset.txt"
-bottlenecks_train_dir = "./data/train_bottlenecks/"
-bottlenecks_eval_dir = "./data/eval_bottlenecks/"
+model = "inceptionresnetv1"
+model_dir = "./data/" + model + "/"
+
+filtered_train_data_dir ="./data/datasets/filtered_train_dataset"
+filtered_eval_data_dir = "./data/datasets/filtered_eval_dataset"
+img_paths_txt_train_path = model_dir + "all_img_train_paths.txt"
+img_paths_txt_eval_path = model_dir + "all_img_eval_paths.txt"
+diff_dataset_txt_train_path = model_dir + "diff_train_dataset.txt"
+diff_dataset_txt_eval_path = model_dir + "diff_eval_dataset.txt"
+bottlenecks_train_dir = model_dir + "train_bottlenecks/"
+bottlenecks_eval_dir = model_dir + "eval_bottlenecks/"
+
+tfrecord_train_file_path = model_dir + "tfrecord_train_file"
+tfrecord_test_file_path = model_dir + "tfrecord_test_file"
 
 # It will generate n tuples with label "0" and other n tuples with label "1" for each class or person.
 num_tuples_per_class = 30
@@ -49,18 +55,18 @@ def generate_txt_with_all_images(data_dir, path):
             data_dir: dataset directory path, with directory classes and their corresponding images.
             path: text file path where the image paths are going to be saved.
     """
-    with open(path, 'w') as out:
+    with open(path, "w") as out:
         for person in os.listdir(data_dir):
             path = os.path.join(data_dir, person)
 
             for img in os.listdir(path):
                 img_path = os.path.join(path, img)
-                out.write(img_path + '\n')
+                out.write(img_path + "\n")
 
 
 def create_diff_dataset_txt(bottlenecks_dir, diff_dataset_txt_path,  num_tuples_per_class=3):
     """
-    Creates a text file with tuples of bottleneck path pairs with a label each line. The label will be a '0' if this
+    Creates a text file with tuples of bottleneck path pairs with a label each line. The label will be a "0" if this
     image pairs are not the same person, and 1 if they are the same.
 
         Args:
@@ -69,7 +75,7 @@ def create_diff_dataset_txt(bottlenecks_dir, diff_dataset_txt_path,  num_tuples_
             num_tuples_per_class: number of tuples it will be generated for each class. The total number for each class
             will be 2*n.
     """
-    with open(diff_dataset_txt_path, 'w') as out:
+    with open(diff_dataset_txt_path, "w") as out:
         print("Creating diff dataset.")
         for class_name in os.listdir(bottlenecks_dir):
             class_path = os.path.join(bottlenecks_dir, class_name)
@@ -78,7 +84,7 @@ def create_diff_dataset_txt(bottlenecks_dir, diff_dataset_txt_path,  num_tuples_
                 npy_path_1 = get_random_item_from_class(class_path)
                 npy_path_2 = get_random_item_from_class(class_path)
 
-                out.write(npy_path_1 + ' ' + npy_path_2 + ' 1' + '\n')
+                out.write(npy_path_1 + " " + npy_path_2 + " 1" + "\n")
 
             for i in range(num_tuples_per_class):
                 npy_path_1 = get_random_item_from_class(class_path)
@@ -87,7 +93,7 @@ def create_diff_dataset_txt(bottlenecks_dir, diff_dataset_txt_path,  num_tuples_
                                                    exclude=os.listdir(bottlenecks_dir).index(class_name))
                 npy_path_2 = get_random_item_from_class(os.path.join(bottlenecks_dir, comparing_class))
 
-                out.write(npy_path_1 + ' ' + npy_path_2 + ' 0' + '\n')
+                out.write(npy_path_1 + " " + npy_path_2 + " 0" + "\n")
         print("Diff dataset created")
 
 
@@ -166,9 +172,9 @@ def _create_tf_example(entry):
 
     # Data which is going to be stored in the TFRecord file
     feature = {
-        'bottleneck_1': tf.train.Feature(float_list=tf.train.FloatList(value=bottleneck_1.reshape(-1))),
-        'bottleneck_2': tf.train.Feature(float_list=tf.train.FloatList(value=bottleneck_2.reshape(-1))),
-        'label': tf.train.Feature(int64_list=tf.train.Int64List(value=[label]))
+        "bottleneck_1": tf.train.Feature(float_list=tf.train.FloatList(value=bottleneck_1.reshape(-1))),
+        "bottleneck_2": tf.train.Feature(float_list=tf.train.FloatList(value=bottleneck_2.reshape(-1))),
+        "label": tf.train.Feature(int64_list=tf.train.Int64List(value=[label]))
     }
 
     tf_example = tf.train.Example(features=tf.train.Features(feature=feature))
@@ -178,7 +184,7 @@ def _create_tf_example(entry):
 
 def _get_image_and_label_from_entry(entry):
     """
-    Get the image's path and its label from a dataset entry.
+    Get the image"s path and its label from a dataset entry.
 
         Args:
             entry: string containing the path of the two images and its label.
@@ -188,23 +194,26 @@ def _get_image_and_label_from_entry(entry):
     """
     file_path_1, file_path_2, label = entry.split(" ")
 
-    label = label.strip('\n')
+    label = label.strip("\n")
 
     return file_path_1, file_path_2, int(label)
 
 
 def main():
-    # generate_txt_with_all_images(filtered_train_data_dir, img_paths_txt_train_path)
-    # generate_txt_with_all_images(filtered_eval_data_dir, img_paths_txt_eval_path)
+    generate_txt_with_all_images(filtered_train_data_dir, img_paths_txt_train_path)
+    generate_txt_with_all_images(filtered_eval_data_dir, img_paths_txt_eval_path)
 
-    '''Create bottlenecks with "inferece_bottlecks.py first"'''
+    """Create bottlenecks with 'inferece_bottlecks.py' first"""
+    import inference_bottlenecks
+    inference_bottlenecks.inference_bottlenecks(img_paths_txt_eval_path, bottlenecks_train_dir, model)
+    inference_bottlenecks.inference_bottlenecks(img_paths_txt_train_path, bottlenecks_eval_dir, model)
 
-    # create_diff_dataset_txt(bottlenecks_train_dir, diff_dataset_txt_train_path, num_tuples_per_class)
-    # create_diff_dataset_txt(bottlenecks_eval_dir, diff_dataset_txt_eval_path, num_tuples_per_class=1)
+    create_diff_dataset_txt(bottlenecks_train_dir, diff_dataset_txt_train_path, num_tuples_per_class)
+    create_diff_dataset_txt(bottlenecks_eval_dir, diff_dataset_txt_eval_path, num_tuples_per_class=3)
 
-    generate_tfrecord_files(diff_dataset_txt_train_path, "./data/tfrecord_train_file")
-    generate_tfrecord_files(diff_dataset_txt_eval_path, "./data/tfrecord_eval_file")
+    generate_tfrecord_files(diff_dataset_txt_train_path, tfrecord_train_file_path)
+    generate_tfrecord_files(diff_dataset_txt_eval_path, tfrecord_test_file_path)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

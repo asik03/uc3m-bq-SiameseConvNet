@@ -28,7 +28,7 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-image_size = 182
+image_size = 224
 
 
 def create_bottleneck_iterator(data):
@@ -87,7 +87,7 @@ def _parse_data(path):
     return img, path
 
 
-def create_iterator_for_diff(tfrecord_file, is_training, batch_size=64):
+def create_iterator_for_diff(tfrecord_file, is_training, batch_size=64, f_lenght=1000):
     """
     Creates a one shot iterator from the TFRecord files.
         Args:
@@ -98,7 +98,8 @@ def create_iterator_for_diff(tfrecord_file, is_training, batch_size=64):
             iterator: one shot iterator.
     """
     dataset = tf.data.TFRecordDataset(tfrecord_file)
-
+    global feature_lenght
+    feature_lenght = f_lenght
     if is_training:
         dataset = dataset.map(_parse)
         dataset = dataset.repeat()
@@ -125,8 +126,8 @@ def _parse(serialized):
     # Define a dict with the data-names and types we expect to find in the TFRecords file.
 
     feature = {
-        'bottleneck_1': tf.FixedLenFeature((1792,), tf.float32),
-        'bottleneck_2': tf.FixedLenFeature((1792,), tf.float32),
+        'bottleneck_1': tf.FixedLenFeature((feature_lenght,), tf.float32),
+        'bottleneck_2': tf.FixedLenFeature((feature_lenght,), tf.float32),
         'label': tf.FixedLenFeature([], tf.int64),
     }
 

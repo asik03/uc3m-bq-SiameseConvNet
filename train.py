@@ -28,23 +28,28 @@ import tensorflow as tf
 import logging
 import load_data as data
 
-
 from model import inception_resnet_v1 as model
 from datetime import datetime
 
-FLAGS = tf.app.flags.FLAGS
-tf.app.flags.DEFINE_string('log_dir', './data/logs/logs_31_mk_16/', """Directory where to write event logs. """)
-tf.app.flags.DEFINE_integer('max_steps', 4000, """Number of epochs to run.""")
-tf.app.flags.DEFINE_string('save_dir', './data/saves/saves_31_mk_16/', """Directory where to save and load the checkpoints. """)
-tf.app.flags.DEFINE_string('tfrecord_file', './data/tfrecord_train_file', """File with the dataset to train. """)
+
+# FLAGS = tf.app.flags.FLAGS
+# tf.app.flags.DEFINE_string('log_dir', './data/' + model_name + '/logs/logs_31_mk_16/',
+#                            """Directory where to write event logs. """)
+# tf.app.flags.DEFINE_integer('max_steps', 4000, """Number of epochs to run.""")
+# tf.app.flags.DEFINE_string('save_dir', './data/' + model_name + '/saves/saves_31_mk_16/',
+#                            """Directory where to save and load the checkpoints. """)
+# tf.app.flags.DEFINE_string('tfrecord_file', './data/' + model_name + '/tfrecord_train_file',
+#                            """File with the dataset to train. """)
+
 
 
 # Hiperparameters for the training step
-num_classes = 2             # Number of neurons in the final layer of the net.
-dropout_keep_prob = 0.85    # Estimated proportion of neurons to be kept from the dropout. Dropout equals 1 - dropout_keep_prob.
-learning_rate = 0.001       # Learning rate of the optimizer.
-batch_size = 16             # Number of elements of input on each "round".
-seed = 31                   # Value used to set a random fixed value to the random variables.
+num_classes = 2  # Number of neurons in the final layer of the net.
+dropout_keep_prob = 0.85  # Estimated proportion of neurons to be kept from the dropout. Dropout equals 1 - dropout_keep_prob.
+learning_rate = 0.001  # Learning rate of the optimizer.
+batch_size = 16  # Number of elements of input on each "round".
+seed = 31  # Value used to set a random fixed value to the random variables.
+max_steps = 4000  # Number of epochs to run.
 
 
 def init_logger():
@@ -54,25 +59,40 @@ def init_logger():
     return logger
 
 
-def train():
-    if not os.path.exists(FLAGS.save_dir):
-        if not os.path.exists('./data/saves/'):
-            os.mkdir('./data/saves/')
-        os.mkdir(FLAGS.save_dir)
+def train(model_name):
+    if model_name == "inceptionresnetv1":
+        feature_lenght = 1792
+    elif model_name == "mobilenetv2":
+        feature_lenght = 1280
+    else:
+        raise ValueError("The model " + str(model_name) + " doesn't exist.")
+
+    log_dir = './data/' + model_name + '/logs/logs_31_mk_16/'  # Directory where to write event logs.
+    save_dir = './data/' + model_name + '/saves/saves_31_mk_16/'  # Directory where to save and load the checkpoints.
+    tfrecord_file = './data/' + model_name + '/tfrecord_train_file'  # File with the dataset to train.
+
+    if not os.path.exists(save_dir):
+        if not os.path.exists("./data/" + model_name + "/saves/"):
+            os.makedirs("./data/" + model_name + "/saves/")
+        os.mkdir(save_dir)
     with tf.Graph().as_default() as g:
         global_step = tf.train.get_or_create_global_step()
         n = tf.placeholder(tf.float32)
         tf.set_random_seed(seed)
 
         # Get the bottlenecks and labels from the dataset using the iterator
-        iterator = data.create_iterator_for_diff(FLAGS.tfrecord_file, is_training=True, batch_size=batch_size)
+        iterator = data.create_iterator_for_diff(tfrecord_file, is_training=True, batch_size=batch_size, f_lenght=feature_lenght)
         bottlenecks_1_batch, bottlenecks_2_batch, labels_batch = iterator.get_next()
+        print(bottlenecks_1_batch)
+        print(tf.shape(bottlenecks_1_batch))
 
         # Get the absolute difference bottlenecks, using tensorflow functions.
         diff_bottlenecks_tensor = tf.abs(tf.subtract(bottlenecks_1_batch, bottlenecks_2_batch))
-
+        print(tf.shape(diff_bottlenecks_tensor))
+        print(diff_bottlenecks_tensor)
         # Obtain the logits from the bottlenecks difference.
-        logits = model.classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob=dropout_keep_prob, num_classes=num_classes)
+        logits = model.classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob=dropout_keep_prob,
+                                            num_classes=num_classes, is_training=True)
 
         # Used to calculate the class prediction for the training extra loss.
         predictions = tf.nn.top_k(logits, k=1)
@@ -98,13 +118,13 @@ def train():
             sess.run(init)
 
             # Tensorborad options
-            train_writer = tf.summary.FileWriter(FLAGS.log_dir, g)
+            train_writer = tf.summary.FileWriter(log_dir, g)
 
             logger = init_logger()
             logger.info("Training starts...")
 
             # Training loop. Set the max number of steps.
-            for epoch in range(0, FLAGS.max_steps):
+            for epoch in range(0, max_steps):
                 # We compute the image and label batch
                 predicted, labels_batch1 = sess.run([predictions, labels_batch], feed_dict={n: 1.0})
                 j = 1
@@ -126,16 +146,17 @@ def train():
 
                 # We save the progress every 500 steps
                 if epoch % 500 is 0 and epoch is not 0:
-                    saver_ft.save(sess, FLAGS.save_dir, global_step=global_step)
-                    logger.info("***** Saving model in: %s *****", FLAGS.save_dir)
+                    saver_ft.save(sess, save_dir, global_step=global_step)
+                    logger.info("***** Saving model in: %s *****", save_dir)
 
             logger.info("Training ends...")
-            saver_ft.save(sess, FLAGS.save_dir, global_step=global_step)
-            logger.info("***** Saving model in: %s *****", FLAGS.save_dir)
+            saver_ft.save(sess, save_dir, global_step=global_step)
+            logger.info("***** Saving model in: %s *****", save_dir)
 
 
 def main(argv=None):
-    train()
+    # train("")
+    pass
 
 
 if __name__ == "__main__":
