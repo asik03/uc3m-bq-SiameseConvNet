@@ -29,21 +29,6 @@ import random
 import tensorflow as tf
 import numpy as np
 
-model = "inceptionresnetv1"
-model_dir = "./data/" + model + "/"
-
-filtered_train_data_dir ="./data/datasets/filtered_train_dataset"
-filtered_eval_data_dir = "./data/datasets/filtered_eval_dataset"
-img_paths_txt_train_path = model_dir + "all_img_train_paths.txt"
-img_paths_txt_eval_path = model_dir + "all_img_eval_paths.txt"
-diff_dataset_txt_train_path = model_dir + "diff_train_dataset.txt"
-diff_dataset_txt_eval_path = model_dir + "diff_eval_dataset.txt"
-bottlenecks_train_dir = model_dir + "train_bottlenecks/"
-bottlenecks_eval_dir = model_dir + "eval_bottlenecks/"
-
-tfrecord_train_file_path = model_dir + "tfrecord_train_file"
-tfrecord_test_file_path = model_dir + "tfrecord_test_file"
-
 # It will generate n tuples with label "0" and other n tuples with label "1" for each class or person.
 num_tuples_per_class = 30
 
@@ -64,7 +49,7 @@ def generate_txt_with_all_images(data_dir, path):
                 out.write(img_path + "\n")
 
 
-def create_diff_dataset_txt(bottlenecks_dir, diff_dataset_txt_path,  num_tuples_per_class=3):
+def create_diff_dataset_txt(bottlenecks_dir, diff_dataset_txt_path, num_tuples_per_class=3):
     """
     Creates a text file with tuples of bottleneck path pairs with a label each line. The label will be a "0" if this
     image pairs are not the same person, and 1 if they are the same.
@@ -199,20 +184,40 @@ def _get_image_and_label_from_entry(entry):
     return file_path_1, file_path_2, int(label)
 
 
-def main():
+def main(model_name=None):
+    model_dir = "./data/" + model_name + "/"
+
+    filtered_train_data_dir = "./data/datasets/filtered_train_dataset"
+    filtered_eval_data_dir = "./data/datasets/filtered_eval_dataset"
+
+    img_paths_txt_train_path = model_dir + "all_img_train_paths.txt"
+    img_paths_txt_eval_path = model_dir + "all_img_eval_paths.txt"
+
+    diff_dataset_txt_train_path = model_dir + "diff_train_dataset.txt"
+    diff_dataset_txt_eval_path = model_dir + "diff_eval_dataset.txt"
+
+    bottlenecks_train_dir = model_dir + "train_bottlenecks/"
+    bottlenecks_eval_dir = model_dir + "eval_bottlenecks/"
+
+    tfrecord_train_file_path = model_dir + "tfrecord_train_file"
+    tfrecord_test_file_path = model_dir + "tfrecord_test_file"
+
+    """Preparing data"""
     generate_txt_with_all_images(filtered_train_data_dir, img_paths_txt_train_path)
     generate_txt_with_all_images(filtered_eval_data_dir, img_paths_txt_eval_path)
 
-    """Create bottlenecks with 'inferece_bottlecks.py' first"""
+    """Create bottlenecks with 'inference_bottlenecks.py' first"""
     import inference_bottlenecks
-    inference_bottlenecks.inference_bottlenecks(img_paths_txt_eval_path, bottlenecks_train_dir, model)
-    inference_bottlenecks.inference_bottlenecks(img_paths_txt_train_path, bottlenecks_eval_dir, model)
+    inference_bottlenecks.inference_bottlenecks(img_paths_txt_train_path, bottlenecks_train_dir, model_name)
+    inference_bottlenecks.inference_bottlenecks(img_paths_txt_eval_path, bottlenecks_eval_dir, model_name)
 
     create_diff_dataset_txt(bottlenecks_train_dir, diff_dataset_txt_train_path, num_tuples_per_class)
     create_diff_dataset_txt(bottlenecks_eval_dir, diff_dataset_txt_eval_path, num_tuples_per_class=3)
 
     generate_tfrecord_files(diff_dataset_txt_train_path, tfrecord_train_file_path)
     generate_tfrecord_files(diff_dataset_txt_eval_path, tfrecord_test_file_path)
+
+    print("Pre_input done...")
 
 
 if __name__ == "__main__":
