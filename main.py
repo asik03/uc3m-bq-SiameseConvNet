@@ -43,7 +43,18 @@ tfrecord_test_file_path = model_dir + "tfrecord_test_file"
 num_tuples_per_class = 30
 
 
-def main():
+def deploy(prev_values=False, model_name=None, seed=None, batch_size=32, max_steps=2000, dropout=0.85,
+           learning_rate=0.001, success_boundary=None):
+    if prev_values:
+        print("------- New model -------")
+        print("Model: " + model_name)
+        print("Seed: " + seed)
+        print("Batch_size: " + str(batch_size))
+        print("Max_steps: " + str(max_steps))
+        print("Dropout: " + str(dropout))
+        print("Learning_rate: " + str(learning_rate))
+        print("Success_boundary: " + success_boundary)
+
     """Preparing data"""
     import pre_input
     pre_input.generate_txt_with_all_images(filtered_train_data_dir, img_paths_txt_train_path)
@@ -70,4 +81,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    deploy()
