@@ -70,7 +70,7 @@ def compute_bottleneck(images, keep_probability=0.8, phase_train=True, weight_de
 
 def mobilenet_v2(inputs,
                  num_classes=10, # Fixed to 10 at the moment, needed for the pretrained weights used
-                 dropout_keep_prob=0.999,
+                 dropout_keep_prob=0.99,
                  is_training=True,
                  depth_multiplier=1.0,
                  prediction_fn=tf.contrib.layers.softmax,
@@ -117,7 +117,8 @@ def mobilenet_v2(inputs,
             # net = slim.avg_pool2d(features, features.get_shape()[1:3], padding='VALID')
 
             bottleneck = slim.flatten(bottleneck)
-            bottleneck = slim.dropout(bottleneck, dropout_keep_prob, is_training=is_training, scope='Dropout')
+            if is_training:
+                bottleneck = slim.dropout(bottleneck, dropout_keep_prob, is_training=is_training, scope='Dropout')
             print(bottleneck)
             print(tf.shape(bottleneck))
             # elimina las dimensiones de tamaño 1

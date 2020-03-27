@@ -23,6 +23,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import numpy as np
 import tensorflow as tf
 import logging
 import load_data as data
@@ -100,8 +101,8 @@ def deploy(model_name=None, seed=None, batch_size=32, max_steps=2000, dropout=0.
             predicted_label = 0
             false_positives = 0
             false_negatives = 0
-            true_success = 0
-            false_success = 0
+            true_positives = 0
+            true_negatives = 0
             exec_next_step = True
 
             while exec_next_step:
@@ -120,9 +121,9 @@ def deploy(model_name=None, seed=None, batch_size=32, max_steps=2000, dropout=0.
 
                     # Obtaining confusion matrix values
                     if predicted_label == label[0] and predicted_label == 1:
-                        true_success += 1
+                        true_positives += 1
                     if predicted_label == label[0] and predicted_label == 0:
-                        false_success += 1
+                        true_negatives += 1
                     if predicted_label != label[0] and predicted_label == 1:
                         false_positives += 1
                     if predicted_label != label[0] and predicted_label == 0:
@@ -130,21 +131,27 @@ def deploy(model_name=None, seed=None, batch_size=32, max_steps=2000, dropout=0.
 
                 except tf.errors.OutOfRangeError:
                     logger.info("Eval ends...")
+                    logger.info("Total true positives: %i", true_positives)
+                    logger.info("Total true negatives: %i", true_negatives)
                     logger.info("Total false positives: %i", false_positives)
                     logger.info("Total false negatives: %i", false_negatives)
-                    logger.info("Total true success: %i", true_success)
-                    logger.info("Total false success: %i", false_success)
-                    logger.info("Total: %i", false_positives + false_negatives + true_success + false_success)
-                    logger.info("ACCURACY: %i ", (true_success + false_success) / (
-                            false_positives + false_negatives + true_success + false_success) * 100)
+                    logger.info("Total: %i", false_positives + false_negatives + true_positives + true_negatives)
+                    logger.info("ACCURACY: %i ", (true_positives + true_negatives) / (
+                            false_positives + false_negatives + true_positives + true_negatives) * 100)
                     # ROC matrix
                     logger.info(success_boundary)
-                    exec_next_step = False
-                ## todo: Guardar resultados
+                    return np.array([model_name, seed, batch_size, max_steps, dropout, learning_rate, success_boundary,
+                                     true_positives, true_negatives, false_positives, false_negatives])
 
 
 def main(argv=None):
-    deploy("mobilenetv2", 31, 16, 2000, 0.85, 0.001, 0.75)
+    array = deploy("mobilenetv2", 31, 16, 2000, 0.85, 0.001, 0.75)
+    array = np.concatenate(([1], array))
+    print(type(array))
+
+    print(array)
+    header = "Id, Model, Seed, BatchSize, MaxSteps, DropoutKeepProb, LearningRate, DiscriminationThreshold, TP, TN, FP, FN"
+    np.savetxt('D:/PycharmProjects/uc3m-bq-SiameseConvNet/data/results/struct_array1.csv', [array], delimiter=',', fmt='%s', header=header, comments="")
 
 
 def init_logger():
