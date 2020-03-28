@@ -40,13 +40,12 @@ def auto_main():
                                 """Save data in the array"""
                                 eval_result = np.concatenate(([round_id], eval_result))
                                 result_list.append(eval_result)
-
                             # save in cvs:
-                            np.savetxt("D:/PycharmProjects/uc3m-bq-SiameseConvNet/data/results/results_" + round_id +
-                                       ".csv", [result_list], delimiter=',', fmt='%s',
+                            np.savetxt("D:/PycharmProjects/uc3m-bq-SiameseConvNet/data/results/results_" + str(round_id) +
+                                       ".csv", np.array(result_list), delimiter=',', fmt='%s',
                                        header=csv_header, comments="")
     # save in cvs:
-    np.savetxt('D:/PycharmProjects/uc3m-bq-SiameseConvNet/data/results/final_results.csv', [result_list], delimiter=',',
+    np.savetxt('D:/PycharmProjects/uc3m-bq-SiameseConvNet/data/results/final_results.csv', np.array(result_list), delimiter=',',
                fmt='%s', header=csv_header, comments="")
 
 
