@@ -202,9 +202,9 @@ def main(model_name=None):
     tfrecord_train_file_path = model_dir + "tfrecord_train_file"
     tfrecord_test_file_path = model_dir + "tfrecord_test_file"
 
-    """Preparing data"""
-    generate_txt_with_all_images(filtered_train_data_dir, img_paths_txt_train_path)
-    generate_txt_with_all_images(filtered_eval_data_dir, img_paths_txt_eval_path)
+    # """Preparing data"""
+    # generate_txt_with_all_images(filtered_train_data_dir, img_paths_txt_train_path)
+    # generate_txt_with_all_images(filtered_eval_data_dir, img_paths_txt_eval_path)
 
     """Create bottlenecks with 'inference_bottlenecks.py' first"""
     import inference_bottlenecks
@@ -212,7 +212,7 @@ def main(model_name=None):
     inference_bottlenecks.inference_bottlenecks(img_paths_txt_eval_path, bottlenecks_eval_dir, model_name)
 
     create_diff_dataset_txt(bottlenecks_train_dir, diff_dataset_txt_train_path, num_tuples_per_class)
-    create_diff_dataset_txt(bottlenecks_eval_dir, diff_dataset_txt_eval_path, num_tuples_per_class=3)
+    create_diff_dataset_txt(bottlenecks_eval_dir, diff_dataset_txt_eval_path, num_tuples_per_class=1)
 
     generate_tfrecord_files(diff_dataset_txt_train_path, tfrecord_train_file_path)
     generate_tfrecord_files(diff_dataset_txt_eval_path, tfrecord_test_file_path)
@@ -221,4 +221,4 @@ def main(model_name=None):
 
 
 if __name__ == "__main__":
-    main()
+    main(model_name="mobilenetv3")
