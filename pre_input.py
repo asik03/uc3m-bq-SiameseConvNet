@@ -203,8 +203,8 @@ def main(model_name=None):
     tfrecord_test_file_path = model_dir + "tfrecord_test_file"
 
     # """Preparing data"""
-    # generate_txt_with_all_images(filtered_train_data_dir, img_paths_txt_train_path)
-    # generate_txt_with_all_images(filtered_eval_data_dir, img_paths_txt_eval_path)
+    generate_txt_with_all_images(filtered_train_data_dir, img_paths_txt_train_path)
+    generate_txt_with_all_images(filtered_eval_data_dir, img_paths_txt_eval_path)
 
     """Create bottlenecks with 'inference_bottlenecks.py' first"""
     import inference_bottlenecks

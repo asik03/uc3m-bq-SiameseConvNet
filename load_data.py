@@ -129,8 +129,9 @@ def _parse(serialized):
     # Define a dict with the data-names and types we expect to find in the TFRecords file.
 
     feature = {
-        'bottleneck_1': tf.FixedLenFeature((feature_lenght,), tf.float32),
-        'bottleneck_2': tf.FixedLenFeature((feature_lenght,), tf.float32),
+        # 'bottleneck_1': tf.FixedLenFeature((feature_lenght,), tf.float32),
+        'bottleneck_1': tf.FixedLenFeature([feature_lenght], tf.float32),
+        'bottleneck_2': tf.FixedLenFeature([feature_lenght], tf.float32),
         'label': tf.FixedLenFeature([], tf.int64),
     }
 

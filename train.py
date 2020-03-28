@@ -89,11 +89,9 @@ def deploy(model_name=None, seed=None, batch_size=32, max_steps=2000, dropout=0.
                                                  f_lenght=feature_lenght)
         bottlenecks_1_batch, bottlenecks_2_batch, labels_batch = iterator.get_next()
         print(bottlenecks_1_batch)
-        print(tf.shape(bottlenecks_1_batch))
 
         # Get the absolute difference bottlenecks, using tensorflow functions.
         diff_bottlenecks_tensor = tf.abs(tf.subtract(bottlenecks_1_batch, bottlenecks_2_batch))
-        print(tf.shape(diff_bottlenecks_tensor))
         print(diff_bottlenecks_tensor)
         # Obtain the logits from the bottlenecks difference.
         logits = model.classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob=dropout,

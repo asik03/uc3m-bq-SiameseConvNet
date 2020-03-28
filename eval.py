@@ -56,7 +56,7 @@ def deploy(model_name=None, seed=None, batch_size=32, max_steps=2000, dropout=0.
     elif model_name == "mobilenetv2":
         feature_lenght = 1280
         from model import mobilenetv2 as model
-    elif model_name == "mobilenetv3.py":
+    elif model_name == "mobilenetv3":
         feature_lenght = 1280
         from model import mobilenetv3 as model
     else:
@@ -72,7 +72,7 @@ def deploy(model_name=None, seed=None, batch_size=32, max_steps=2000, dropout=0.
         tf.set_random_seed(seed)
 
         # Create dataset iterator of batch 1, obtaining the statistics correctly
-        iterator = data.create_iterator_for_diff(tfrecord_file, is_training=False, batch_size=batch_size,
+        iterator = data.create_iterator_for_diff(tfrecord_file, is_training=False, batch_size=1,
                                                  f_lenght=feature_lenght)
         bottlenecks_1_batch, bottlenecks_2_batch, labels_batch = iterator.get_next()
 
@@ -148,7 +148,7 @@ def deploy(model_name=None, seed=None, batch_size=32, max_steps=2000, dropout=0.
 
 
 def main(argv=None):
-    array = deploy("mobilenetv2", 31, 16, 2000, 0.85, 0.001, 0.75)
+    array = deploy("mobilenetv3", 31, 16, 2000, 0.85, 0.001, 0.75)
     array = np.concatenate(([1], array))
     print(type(array))
 
