@@ -417,7 +417,7 @@ def compute_bottleneck(images, keep_probability=0.8, weight_decay=0.0, phase_tra
                         weights_regularizer=slim.l2_regularizer(weight_decay),
                         normalizer_fn=slim.batch_norm,
                         normalizer_params=batch_norm_params):
-        return mobilenet(images)
+        return mobilenet(images, conv_defs=V3_LARGE)
 
 
 def classify_bottlenecks(diff_bottlenecks_tensor, dropout_keep_prob=0.85, num_classes=2, is_training=True):
