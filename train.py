@@ -45,6 +45,7 @@ def init_logger():
     logger = logging.getLogger(__name__)
     return logger
 
+# To open tensorboard server:   tensorboard --logdir=./data/mobilenetv3/logs/ --port 6006
 
 def deploy(model_name=None, seed=None, batch_size=32, max_steps=2000, dropout=0.85, learning_rate=0.001):
     print("------- Training model -------")
