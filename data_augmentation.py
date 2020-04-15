@@ -27,7 +27,7 @@ def data_augmentation(image):
     for batch in datagen.flow(x, batch_size=1):
         plt.subplot(3, 5, i + 1)
         plt.grid(False)
-        plt.imshow(batch.reshape(218, 178, 3))
+        plt.imshow(batch.reshape(182, 182, 3))
 
         if i == 9:
             break
