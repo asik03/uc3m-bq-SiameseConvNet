@@ -28,17 +28,19 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-image_size = 224
 
-
-def create_bottleneck_iterator(data):
+def create_bottleneck_iterator(data, img_size):
     """
     Creates a Tensorflow iterator used for the bottleneck inferences.
         Args:
             data: txt file path with the corresponding data.
+            img_size: image size.
         Return:
             iterator: one shot iterator with the images and labels.
     """
+
+    global image_size
+    image_size = img_size
     paths = _load_all_images_paths(data)
 
     with tf.variable_scope('Iterator'):
@@ -94,6 +96,7 @@ def create_iterator_for_diff(tfrecord_file, is_training, batch_size=64, f_lenght
             tfrecord_file: a Tensorflow record file path with bottlenecks and labels.
             is_training: bool variable, change the dataset in order to make a train or eval iterator.
             batch_size: number of inputs per batch, 64 by default.
+            f_lenght: feature lenght of the bottlenecks. Depends of the model used
         Return:
             iterator: one shot iterator.
     """
@@ -126,8 +129,9 @@ def _parse(serialized):
     # Define a dict with the data-names and types we expect to find in the TFRecords file.
 
     feature = {
-        'bottleneck_1': tf.FixedLenFeature((feature_lenght,), tf.float32),
-        'bottleneck_2': tf.FixedLenFeature((feature_lenght,), tf.float32),
+        # 'bottleneck_1': tf.FixedLenFeature((feature_lenght,), tf.float32),
+        'bottleneck_1': tf.FixedLenFeature([feature_lenght], tf.float32),
+        'bottleneck_2': tf.FixedLenFeature([feature_lenght], tf.float32),
         'label': tf.FixedLenFeature([], tf.int64),
     }
 

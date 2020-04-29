@@ -36,32 +36,37 @@ import load_data as data
 # model_weights = "./data/" + model + "/weights/model.ckpt-192432" # change img_size to 224
 
 
-def inference_bottlenecks(imgs_path, dir_bottlenecks, model):
+def inference_bottlenecks(imgs_path, dir_bottlenecks, model_name):
     """
     Bottlenecks generator.
         Args:
             imgs_path: txt path file with a list of image paths, one per each row.
             dir_bottlenecks: directory where to save the bottlenecks.
+            model_name
     """
     global img_size
-    if model == "inceptionresnetv1":
-        import model.inception_resnet_v1 as model_net
-        model_weights = "./data/" + model + "/weights/model-20180408-102900.ckpt-90"  # change img_size to 182
+    if model_name == "inceptionresnetv1":
+        import model.inception_resnet_v1 as model
+        model_weights = "./data/" + model_name + "/weights/model-20180408-102900.ckpt-90"  # change img_size to 182
         img_size = 182
-    elif model == "mobilenetv2":
-        import model.mobilenetv2 as model_net
-        model_weights = "./data/" + model + "/weights/model.ckpt-192432" # change img_size to 224
+    elif model_name == "mobilenetv2":
+        import model.mobilenetv2 as model
+        model_weights = "./data/" + model_name + "/weights/model.ckpt-192432"  # change img_size to 224
+        img_size = 224
+    elif model_name == "mobilenetv3":
+        import model.mobilenetv3 as model
+        model_weights = "./data/" + model_name + "/weights/model.ckpt-540000"  # change img_size to 224
         img_size = 224
     else:
-        raise ValueError('No model "' + model + ' found.')
+        raise ValueError('No model "' + model_name + ' found.')
 
     with tf.Graph().as_default():
         # Get the image from the dataset using the iterator
-        iterator = data.create_bottleneck_iterator(imgs_path)
+        iterator = data.create_bottleneck_iterator(imgs_path, img_size=img_size)
         img, path_tensor = iterator.get_next()
 
         # Bottleneck inferences
-        bottleneck_tensor, end_points = model_net.compute_bottleneck(img, phase_train=False)
+        bottleneck_tensor, end_points = model.compute_bottleneck(img, phase_train=False)
 
         if not os.path.exists(dir_bottlenecks):
             os.makedirs(dir_bottlenecks)
