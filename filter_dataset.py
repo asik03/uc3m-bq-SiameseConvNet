@@ -46,7 +46,7 @@ def _create_filter_paths_txt(dataset_path, train_path, eval_path, min_num_imgs, 
                 Its been preprocessed with facenet repository.
                train_path: text file path where the training image paths are going to be saved.
                eval_path: text file path where the eval image paths are going to be saved.
-               min_num_imgs: number of imgs that each class need to have to consider to the new training dataset.
+               min_num_imgs: number of imgs that each class needs to have to consider to the new training dataset.
                max_num_imgs: maximum number of imgs that is going to be stored for each class.
     """
     with open(train_path, 'w') as out:
