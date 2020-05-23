@@ -53,6 +53,9 @@ def deploy(model_name=None, seed=None, batch_size=32, max_steps=2000, dropout=0.
     if model_name == "inceptionresnetv1":
         feature_lenght = 1792
         from model import inception_resnet_v1 as model
+    elif model_name == "inceptionresnetv2":
+        feature_lenght = 1536
+        from model import inception_resnet_v2 as model
     elif model_name == "mobilenetv2":
         feature_lenght = 1280
         from model import mobilenetv2 as model
@@ -115,7 +118,10 @@ def deploy(model_name=None, seed=None, batch_size=32, max_steps=2000, dropout=0.
 
                     # Using auxiliary parameter to check the results later.
                     if predicted.indices[0][0] == 0:
-                        predicted_label = 0
+                        if predicted.values[0][0] < success_boundary:
+                            predicted_label = 0
+                        else:
+                            predicted_label = 1
                     elif predicted.indices[0][0] == 1:
                         if predicted.values[0][0] >= success_boundary:
                             predicted_label = 1
@@ -123,13 +129,13 @@ def deploy(model_name=None, seed=None, batch_size=32, max_steps=2000, dropout=0.
                             predicted_label = 0
 
                     # Obtaining confusion matrix values
-                    if predicted_label == label[0] and predicted_label == 1:
+                    if label[0] == 1 and predicted_label == 1:
                         true_positives += 1
-                    if predicted_label == label[0] and predicted_label == 0:
+                    if label[0] == 0 and predicted_label == 0:
                         true_negatives += 1
-                    if predicted_label != label[0] and predicted_label == 1:
+                    if label[0] == 0 and predicted_label == 1:
                         false_positives += 1
-                    if predicted_label != label[0] and predicted_label == 0:
+                    if label[0] == 1 and predicted_label == 0:
                         false_negatives += 1
 
                 except tf.errors.OutOfRangeError:
