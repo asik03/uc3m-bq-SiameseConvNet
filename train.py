@@ -47,6 +47,7 @@ def init_logger():
 
 # To open tensorboard server:   tensorboard --logdir=./data/mobilenetv3/logs/ --port 6006
 
+
 def deploy(model_name=None, seed=None, batch_size=32, max_steps=2000, dropout=0.85, learning_rate=0.001):
     print("------- Training model -------")
     print("Model: " + model_name)
@@ -59,6 +60,9 @@ def deploy(model_name=None, seed=None, batch_size=32, max_steps=2000, dropout=0.
     if model_name == "inceptionresnetv1":
         feature_lenght = 1792
         from model import inception_resnet_v1 as model
+    elif model_name == "inceptionresnetv2":
+        feature_lenght = 1536
+        from model import inception_resnet_v2 as model
     elif model_name == "mobilenetv2":
         feature_lenght = 1280
         from model import mobilenetv2 as model

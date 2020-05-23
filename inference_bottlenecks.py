@@ -31,11 +31,6 @@ import numpy as np
 import load_data as data
 
 
-# model_weights = "./data/" + model + "/weights/model-20180408-102900.ckpt-90" #change img_size to 182
-
-# model_weights = "./data/" + model + "/weights/model.ckpt-192432" # change img_size to 224
-
-
 def inference_bottlenecks(imgs_path, dir_bottlenecks, model_name):
     """
     Bottlenecks generator.
@@ -49,6 +44,10 @@ def inference_bottlenecks(imgs_path, dir_bottlenecks, model_name):
         import model.inception_resnet_v1 as model
         model_weights = "./data/" + model_name + "/weights/model-20180408-102900.ckpt-90"  # change img_size to 182
         img_size = 182
+    elif model_name == "inceptionresnetv2":
+        import model.inception_resnet_v2 as model
+        model_weights = "./data/" + model_name + "/weights/inception_resnet_v2_2016_08_30.ckpt"  # change img_size to 182
+        img_size = 299
     elif model_name == "mobilenetv2":
         import model.mobilenetv2 as model
         model_weights = "./data/" + model_name + "/weights/model.ckpt-192432"  # change img_size to 224
@@ -106,6 +105,6 @@ def inference_bottlenecks(imgs_path, dir_bottlenecks, model_name):
 
 
 if __name__ == '__main__':
-    # inference_bottlenecks(img_paths_txt_train_path, bottlenecks_train_dir)
+    #inference_bottlenecks(img_paths_txt_train_path, bottlenecks_train_dir, "inceptionresnetv2")
     # inference_bottlenecks(img_paths_txt_eval_path, bottlenecks_eval_dir)
     pass

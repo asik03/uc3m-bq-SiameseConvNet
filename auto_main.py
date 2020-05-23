@@ -83,43 +83,15 @@ if __name__ == "__main__":
     dropout_keep_probs = [0.85]
 
     auto_main(
-        _id=10,
-        _models=["inceptionresnetv1"],
+        _id=13,
+        _models=["mobilenetv2", "mobilenetv3"],
         _seeds=seeds,
         _batch_sizes=[8],
         _max_steps_array=[250],
         _learning_rates=[0.001],
-        _success_boundaries=success_boundaries,
+        _success_boundaries=[0.7],
         _dropouts=dropout_keep_probs)
 
-    auto_main(
-        _id=11,
-        _models=["inceptionresnetv2"],
-        _seeds=seeds,
-        _batch_sizes=[16],
-        _max_steps_array=[500],
-        _learning_rates=[0.001],
-        _success_boundaries=success_boundaries,
-        _dropouts=dropout_keep_probs)
 
-    auto_main(
-        _id=12,
-        _models=["mobilenetv2"],
-        _seeds=seeds,
-        _batch_sizes=[8],
-        _max_steps_array=[250],
-        _learning_rates=[0.001],
-        _success_boundaries=success_boundaries,
-        _dropouts=dropout_keep_probs)
-
-    # auto_main(
-    #     _id=9,
-    #     _models=["mobilenetv3"],
-    #     _seeds=seeds,
-    #     _batch_sizes=[16],
-    #     _max_steps_array=[250],
-    #     _learning_rates=[0.001],
-    #     _success_boundaries=success_boundaries,
-    #     _dropouts=dropout_keep_probs)
 
     ##pre_input.main("inceptionresnetv2")
